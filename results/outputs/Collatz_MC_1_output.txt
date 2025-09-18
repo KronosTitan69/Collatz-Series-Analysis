@@ -1,0 +1,39 @@
+=== STDOUT ===
+Initializing Collatz Conjecture Computational Solver...
+
+============================================================
+COLLATZ CONJECTURE COMPUTATIONAL ANALYSIS REPORT
+============================================================
+Basic Markov Chain............ 100.0%
+Finite State Automaton........ 89.8%
+Machine Learning.............. 100.0%
+Combined Ensemble............. 89.8%
+
+Test Statistics:
+Total numbers tested: 49
+Convergent cases: 49 (100.0%)
+
+Symbolic Analysis:
+Patterns found: 0
+Mean stopping time: 31.81
+Convergence rate: 100.0%
+
+============================================================
+CONCLUSION:
+============================================================
+Best performing method: Basic Markov Chain (100.0%)
+✓ High accuracy achieved - computational evidence supports conjecture
+
+Note: This analysis tests the conjecture on a limited range.
+Mathematical proof remains an open problem.
+
+=== STDERR ===
+INFO:__main__:Starting comprehensive Collatz analysis...
+INFO:__main__:Building basic Markov chain...
+INFO:__main__:Building modular Markov chain (mod 8)...
+INFO:__main__:Building power-law Markov chain...
+INFO:__main__:Building Finite State Automaton...
+INFO:__main__:Collecting ML training data...
+INFO:__main__:Searching for symbolic patterns...
+
+=== EXIT CODE: 0 ===

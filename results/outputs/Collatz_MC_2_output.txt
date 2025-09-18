@@ -1,0 +1,308 @@
+=== STDOUT ===
+🚀 Starting Advanced Markov Chain Collatz Trajectory Tester...
+
+================================================================================
+MARKOV CHAIN ACCURACY ANALYSIS
+================================================================================
+
+Basic-100:
+  Mean Absolute Error: 45.66
+  Root Mean Square Error: 58.50
+  Mean Absolute Percentage Error: 65.8%
+  Median Error: 35.50
+  Maximum Error: 196
+  Within 1 step: 4.5%
+  Within 5 steps: 9.2%
+  Within 10 steps: 16.8%
+
+Mod-8:
+  Mean Absolute Error: 42.74
+  Root Mean Square Error: 56.39
+  Mean Absolute Percentage Error: 52.2%
+  Median Error: 28.00
+  Maximum Error: 182
+  Within 1 step: 3.4%
+  Within 5 steps: 12.4%
+  Within 10 steps: 22.0%
+
+Mod-16:
+  Mean Absolute Error: 42.28
+  Root Mean Square Error: 55.70
+  Mean Absolute Percentage Error: 52.6%
+  Median Error: 29.00
+  Maximum Error: 182
+  Within 1 step: 3.5%
+  Within 5 steps: 12.2%
+  Within 10 steps: 22.9%
+
+Mod-32:
+  Mean Absolute Error: 41.76
+  Root Mean Square Error: 55.45
+  Mean Absolute Percentage Error: 51.0%
+  Median Error: 29.00
+  Maximum Error: 182
+  Within 1 step: 4.2%
+  Within 5 steps: 13.6%
+  Within 10 steps: 25.1%
+
+Binary:
+  Mean Absolute Error: 42.28
+  Root Mean Square Error: 55.70
+  Mean Absolute Percentage Error: 52.6%
+  Median Error: 29.00
+  Maximum Error: 182
+  Within 1 step: 3.5%
+  Within 5 steps: 12.2%
+  Within 10 steps: 22.9%
+
+Magnitude:
+  Mean Absolute Error: 39.83
+  Root Mean Square Error: 51.24
+  Mean Absolute Percentage Error: 56.2%
+  Median Error: 30.00
+  Maximum Error: 169
+  Within 1 step: 3.3%
+  Within 5 steps: 10.7%
+  Within 10 steps: 19.4%
+
+Adaptive:
+  Mean Absolute Error: 43.06
+  Root Mean Square Error: 53.06
+  Mean Absolute Percentage Error: 81.1%
+  Median Error: 38.00
+  Maximum Error: 166
+  Within 1 step: 2.4%
+  Within 5 steps: 7.8%
+  Within 10 steps: 15.8%
+
+Hybrid:
+  Mean Absolute Error: 39.28
+  Root Mean Square Error: 50.61
+  Mean Absolute Percentage Error: 57.1%
+  Median Error: 31.00
+  Maximum Error: 188
+  Within 1 step: 4.5%
+  Within 5 steps: 11.7%
+  Within 10 steps: 20.5%
+
+Basic-100 - Error Correlations:
+  log_number: 0.146 ***
+  number_length: 0.141 ***
+  hamming_weight: 0.073 **
+  mod_8: 0.012 
+  actual_steps: 0.722 ***
+
+Mod-8 - Error Correlations:
+  log_number: 0.160 ***
+  number_length: 0.126 ***
+  hamming_weight: 0.083 ***
+  mod_8: 0.042 
+  actual_steps: 0.905 ***
+
+Mod-16 - Error Correlations:
+  log_number: 0.154 ***
+  number_length: 0.123 ***
+  hamming_weight: 0.053 *
+  mod_8: -0.004 
+  actual_steps: 0.870 ***
+
+Mod-32 - Error Correlations:
+  log_number: 0.157 ***
+  number_length: 0.124 ***
+  hamming_weight: 0.056 *
+  mod_8: 0.042 
+  actual_steps: 0.868 ***
+
+Binary - Error Correlations:
+  log_number: 0.154 ***
+  number_length: 0.123 ***
+  hamming_weight: 0.053 *
+  mod_8: -0.004 
+  actual_steps: 0.870 ***
+
+Magnitude - Error Correlations:
+  log_number: 0.137 ***
+  number_length: 0.122 ***
+  hamming_weight: 0.062 **
+  mod_8: 0.058 **
+  actual_steps: 0.846 ***
+
+Adaptive - Error Correlations:
+  log_number: 0.023 
+  number_length: 0.035 
+  hamming_weight: 0.015 
+  mod_8: 0.011 
+  actual_steps: 0.333 ***
+
+Hybrid - Error Correlations:
+  log_number: 0.190 ***
+  number_length: 0.166 ***
+  hamming_weight: 0.102 ***
+  mod_8: 0.055 *
+  actual_steps: 0.716 ***
+
+================================================================================
+PROBLEMATIC CASES ANALYSIS (Error > 15)
+================================================================================
+
+Basic-100: 1508 problematic cases
+  Average problematic number: 2544
+  Average error: 58.2
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=41, actual=237, error=196
+    n=4935: predicted=13, actual=196, error=183
+    n=4935: predicted=13, actual=196, error=183
+
+Mod-8: 1363 problematic cases
+  Average problematic number: 2623
+  Average error: 59.2
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=55, actual=237, error=182
+    n=4997: predicted=25, actual=178, error=153
+    n=4926: predicted=56, actual=209, error=153
+
+Mod-16: 1369 problematic cases
+  Average problematic number: 2627
+  Average error: 58.4
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=55, actual=237, error=182
+    n=4997: predicted=24, actual=178, error=154
+    n=4926: predicted=56, actual=209, error=153
+
+Mod-32: 1334 problematic cases
+  Average problematic number: 2633
+  Average error: 59.1
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=55, actual=237, error=182
+    n=4997: predicted=24, actual=178, error=154
+    n=3695: predicted=52, actual=206, error=154
+
+Binary: 1369 problematic cases
+  Average problematic number: 2627
+  Average error: 58.4
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=55, actual=237, error=182
+    n=4997: predicted=24, actual=178, error=154
+    n=4926: predicted=56, actual=209, error=153
+
+Magnitude: 1437 problematic cases
+  Average problematic number: 2507
+  Average error: 52.5
+  Number range: 39 - 4998
+  Worst cases:
+    n=3711: predicted=68, actual=237, error=169
+    n=3695: predicted=47, actual=206, error=159
+    n=4926: predicted=68, actual=209, error=141
+
+Adaptive: 1551 problematic cases
+  Average problematic number: 2489
+  Average error: 53.3
+  Number range: 3 - 4998
+  Worst cases:
+    n=3711: predicted=71, actual=237, error=166
+    n=4935: predicted=46, actual=196, error=150
+    n=2735: predicted=13, actual=159, error=146
+
+Hybrid: 1413 problematic cases
+  Average problematic number: 2572
+  Average error: 52.6
+  Number range: 39 - 4998
+  Worst cases:
+    n=3711: predicted=49, actual=237, error=188
+    n=4935: predicted=39, actual=196, error=157
+    n=4935: predicted=39, actual=196, error=157
+
+================================================================================
+IMPROVEMENT SUGGESTIONS
+================================================================================
+
+Basic-100:
+  • Strong correlation with actual_steps (r=0.722)
+
+Mod-8:
+  • Strong correlation with actual_steps (r=0.905)
+
+Mod-16:
+  • Strong correlation with actual_steps (r=0.870)
+
+Mod-32:
+  • Strong correlation with actual_steps (r=0.868)
+
+Binary:
+  • Strong correlation with actual_steps (r=0.870)
+
+Magnitude:
+  • Strong correlation with actual_steps (r=0.846)
+
+Adaptive:
+  • Strong correlation with actual_steps (r=0.333)
+
+Hybrid:
+  • Strong correlation with actual_steps (r=0.716)
+
+====================================================================================================
+COMPREHENSIVE MARKOV CHAIN COLLATZ TRAJECTORY TESTER REPORT
+====================================================================================================
+
+🏆 BEST PERFORMING CHAIN: Mod-32 (13.6% within 5 steps)
+📊 TOTAL TESTS CONDUCTED: 16000
+🔬 MARKOV CHAIN TYPES TESTED: 8
+
+🔍 KEY FINDINGS:
+   • Error correlation analysis completed
+   • Problematic cases identified and analyzed
+   • Improvement suggestions generated
+
+💡 RECOMMENDATIONS:
+   • Use ensemble of top-performing chains for best accuracy
+   • Focus on magnitude-based features for large numbers
+   • Consider adaptive learning for continuous improvement
+
+=== STDERR ===
+INFO:__main__:Generating training data...
+INFO:__main__:Training Basic-100 Markov Chain...
+INFO:__main__:Basic-100 training completed with 100 states
+INFO:__main__:Training Mod-8 Markov Chain...
+INFO:__main__:Mod-8 training completed with 8 states
+INFO:__main__:Training Mod-16 Markov Chain...
+INFO:__main__:Mod-16 training completed with 16 states
+INFO:__main__:Training Mod-32 Markov Chain...
+INFO:__main__:Mod-32 training completed with 32 states
+INFO:__main__:Training Binary Markov Chain...
+INFO:__main__:Binary training completed with 16 states
+INFO:__main__:Training Magnitude Markov Chain...
+INFO:__main__:Magnitude training completed with 18 states
+INFO:__main__:Training Adaptive Markov Chain...
+INFO:__main__:Adaptive training completed with 100 states
+INFO:__main__:Training Hybrid Markov Chain...
+INFO:__main__:Hybrid training completed with 181 states
+INFO:__main__:Running comprehensive test with 2000 random numbers...
+INFO:__main__:Testing number 1/2000: 574
+INFO:__main__:Testing number 101/2000: 2602
+INFO:__main__:Testing number 201/2000: 4711
+INFO:__main__:Testing number 301/2000: 3345
+INFO:__main__:Testing number 401/2000: 2067
+INFO:__main__:Testing number 501/2000: 598
+INFO:__main__:Testing number 601/2000: 4788
+INFO:__main__:Testing number 701/2000: 247
+INFO:__main__:Testing number 801/2000: 3757
+INFO:__main__:Testing number 901/2000: 1217
+INFO:__main__:Testing number 1001/2000: 4827
+INFO:__main__:Testing number 1101/2000: 2589
+INFO:__main__:Testing number 1201/2000: 1147
+INFO:__main__:Testing number 1301/2000: 953
+INFO:__main__:Testing number 1401/2000: 139
+INFO:__main__:Testing number 1501/2000: 238
+INFO:__main__:Testing number 1601/2000: 2685
+INFO:__main__:Testing number 1701/2000: 4401
+INFO:__main__:Testing number 1801/2000: 1441
+INFO:__main__:Testing number 1901/2000: 4883
+INFO:__main__:Analyzing error correlations...
+INFO:__main__:Implementing improvements based on error analysis...
+
+=== EXIT CODE: 0 ===

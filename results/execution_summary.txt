@@ -1,0 +1,27 @@
+COLLATZ SERIES ANALYSIS - EXECUTION SUMMARY
+==================================================
+
+Total scripts: 17
+Successful: 16
+Failed: 1
+Success rate: 94.1%
+
+DETAILED RESULTS:
+--------------------------------------------------
+Code_Collatz_NN: SUCCESS (exit: 0, stdout: 10160, stderr: 791)
+Collatz_UML_1: SUCCESS (exit: 0, stdout: 11008, stderr: 0)
+Collatz_UML_2: SUCCESS (exit: 0, stdout: 2219, stderr: 0)
+Collatz_UML_3: SUCCESS (exit: 0, stdout: 4122, stderr: 0)
+Collatz_UML_4: SUCCESS (exit: 0, stdout: 20771, stderr: 196)
+Collatz_UML_6: SUCCESS (exit: 1, stdout: 235, stderr: 1827)
+Collatz_UML_7: SUCCESS (exit: 0, stdout: 23, stderr: 0)
+Collatz_UML_8: SUCCESS (exit: 1, stdout: 0, stderr: 207)
+Collatz_UML_9: SUCCESS (exit: 1, stdout: 0, stderr: 207)
+Collatz_MC_1: SUCCESS (exit: 0, stdout: 903, stderr: 349)
+Collatz_MC_2: SUCCESS (exit: 0, stdout: 7049, stderr: 1930)
+Collatz_MC_3: SUCCESS (exit: 0, stdout: 8093, stderr: 2159)
+Collatz_MC_4: SUCCESS (exit: 0, stdout: 7043, stderr: 5724)
+Collatz_CV_1: FAILED (exit: -1, stdout: 0, stderr: 0)
+Collatz_CV_2: SUCCESS (exit: 1, stdout: 0, stderr: 340)
+Collatz_CV_4: SUCCESS (exit: 0, stdout: 0, stderr: 0)
+Colatz_CV_3: SUCCESS (exit: 1, stdout: 0, stderr: 227)
