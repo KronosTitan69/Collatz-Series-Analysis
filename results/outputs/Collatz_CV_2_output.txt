@@ -1,0 +1,10 @@
+=== STDOUT ===
+
+=== STDERR ===
+Traceback (most recent call last):
+  File "/home/runner/work/Collatz-Series-Analysis/Collatz-Series-Analysis/Collatz_CV_2", line 45, in <module>
+    for ax, (title, odd_rule) in zip(axes, variant_defs):
+                                           ^^^^^^^^^^^^
+NameError: name 'variant_defs' is not defined. Did you mean: 'variant_defs_odd'?
+
+=== EXIT CODE: 1 ===

@@ -1,0 +1,90 @@
+=== STDOUT ===
+=== COLLATZ CONJECTURE STOPPING TIME PATTERN ANALYSIS ===
+
+Computing stopping times for numbers 1 to 5000...
+Processed 1000 numbers...
+Processed 2000 numbers...
+Processed 3000 numbers...
+Processed 4000 numbers...
+Processed 5000 numbers...
+
+Analyzing patterns by stopping time...
+
+Performing machine learning analysis...
+
+Analyzing invariant patterns across different ranges...
+
+============================================================
+COMPREHENSIVE ANALYSIS REPORT
+============================================================
+
+BASIC STATISTICS:
+Numbers analyzed: 5000
+Unique stopping times: 196
+Most common stopping time: (38, 107)
+Average stopping time: 77.59
+
+PATTERN ANALYSIS HIGHLIGHTS:
+Stopping time 9: 6 numbers
+  - Mean ones ratio: 0.439
+  - Most common mod 3: 0
+  - Digital root mode: 3
+Stopping time 10: 6 numbers
+  - Mean ones ratio: 0.369
+  - Most common mod 3: 0
+  - Digital root mode: 6
+Stopping time 11: 8 numbers
+  - Mean ones ratio: 0.392
+  - Most common mod 3: 2
+  - Digital root mode: 3
+Stopping time 12: 10 numbers
+  - Mean ones ratio: 0.373
+  - Most common mod 3: 1
+  - Digital root mode: 5
+Stopping time 13: 13 numbers
+  - Mean ones ratio: 0.425
+  - Most common mod 3: 2
+  - Digital root mode: 1
+Stopping time 14: 17 numbers
+  - Mean ones ratio: 0.426
+  - Most common mod 3: 0
+  - Digital root mode: 2
+Stopping time 15: 17 numbers
+  - Mean ones ratio: 0.472
+  - Most common mod 3: 0
+  - Digital root mode: 6
+Stopping time 16: 22 numbers
+  - Mean ones ratio: 0.470
+  - Most common mod 3: 0
+  - Digital root mode: 3
+Stopping time 17: 28 numbers
+  - Mean ones ratio: 0.469
+  - Most common mod 3: 0
+  - Digital root mode: 6
+Stopping time 18: 22 numbers
+  - Mean ones ratio: 0.478
+  - Most common mod 3: 0
+  - Digital root mode: 3
+
+MACHINE LEARNING RESULTS:
+Random Forest accuracy: 0.190
+Gradient Boosting accuracy: 0.023
+
+Top 5 most important features:
+  log_n: 0.307
+  mod_7: 0.122
+  digit_sum: 0.113
+  mod_5: 0.104
+  digital_root: 0.089
+
+INVARIANT PATTERN ANALYSIS:
+Most consistent patterns across ranges:
+  Stopping time 82: 0.984 consistency
+  Stopping time 36: 0.982 consistency
+  Stopping time 27: 0.982 consistency
+  Stopping time 30: 0.981 consistency
+  Stopping time 28: 0.978 consistency
+
+=== STDERR ===
+
+=== EXIT CODE: 0 ===

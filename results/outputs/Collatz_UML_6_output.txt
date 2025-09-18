@@ -1,0 +1,33 @@
+=== STDOUT ===
+Starting Collatz trajectory prediction model...
+Generating Collatz dataset...
+Number of features extracted: 18
+Processing 1000/5000
+Processing 2000/5000
+Processing 3000/5000
+Processing 4000/5000
+Processing 5000/5000
+Training models...
+
+=== STDERR ===
+2025-09-18 22:46:04.264633: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+2025-09-18 22:46:04.310634: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-09-18 22:46:05.546370: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+2025-09-18 22:46:23.464232: E external/local_xla/xla/stream_executor/cuda/cuda_platform.cc:51] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+Traceback (most recent call last):
+  File "/home/runner/work/Collatz-Series-Analysis/Collatz-Series-Analysis/Collatz_UML_6", line 451, in <module>
+    predictor, results = main()
+                         ^^^^^^
+  File "/home/runner/work/Collatz-Series-Analysis/Collatz-Series-Analysis/Collatz_UML_6", line 403, in main
+    predictor.train_models()
+  File "/home/runner/work/Collatz-Series-Analysis/Collatz-Series-Analysis/Collatz_UML_6", line 230, in train_models
+    prob_nn.fit(
+  File "/home/runner/.local/lib/python3.12/site-packages/keras/src/utils/traceback_utils.py", line 122, in error_handler
+    raise e.with_traceback(filtered_tb) from None
+  File "/home/runner/.local/lib/python3.12/site-packages/keras/src/losses/losses.py", line 1800, in mean_absolute_error
+    return ops.mean(ops.abs(y_true - y_pred), axis=-1)
+                            ~~~~~~~^~~~~~~~
+ValueError: Dimensions must be equal, but are 32 and 2 for '{{node sub}} = Sub[T=DT_FLOAT](data_1, sequential_1/dense_4_1/BiasAdd)' with input shapes: [32], [32,2].
+
+=== EXIT CODE: 1 ===

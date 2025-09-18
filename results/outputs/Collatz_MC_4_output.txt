@@ -1,0 +1,385 @@
+=== STDOUT ===
+🚀 Starting Advanced Markov Chain Collatz Trajectory Tester...
+
+================================================================================
+MARKOV CHAIN ACCURACY ANALYSIS
+================================================================================
+
+Basic-100:
+  Mean Absolute Error: 53.48
+  Root Mean Square Error: 68.87
+  Mean Absolute Percentage Error: 50.7%
+  Median Error: 42.00
+  Maximum Error: 268
+  Within 1 step: 2.1%
+  Within 5 steps: 7.5%
+  Within 10 steps: 14.4%
+
+Mod-8:
+  Mean Absolute Error: 53.00
+  Root Mean Square Error: 69.06
+  Mean Absolute Percentage Error: 44.5%
+  Median Error: 39.00
+  Maximum Error: 256
+  Within 1 step: 2.5%
+  Within 5 steps: 9.7%
+  Within 10 steps: 18.5%
+
+Mod-16:
+  Mean Absolute Error: 53.87
+  Root Mean Square Error: 69.73
+  Mean Absolute Percentage Error: 45.8%
+  Median Error: 40.00
+  Maximum Error: 263
+  Within 1 step: 2.6%
+  Within 5 steps: 9.3%
+  Within 10 steps: 17.2%
+
+Mod-32:
+  Mean Absolute Error: 54.99
+  Root Mean Square Error: 70.81
+  Mean Absolute Percentage Error: 47.1%
+  Median Error: 42.00
+  Maximum Error: 245
+  Within 1 step: 2.4%
+  Within 5 steps: 8.6%
+  Within 10 steps: 16.4%
+
+Binary:
+  Mean Absolute Error: 53.87
+  Root Mean Square Error: 69.73
+  Mean Absolute Percentage Error: 45.8%
+  Median Error: 40.00
+  Maximum Error: 263
+  Within 1 step: 2.6%
+  Within 5 steps: 9.3%
+  Within 10 steps: 17.2%
+
+Magnitude:
+  Mean Absolute Error: 42.18
+  Root Mean Square Error: 52.30
+  Mean Absolute Percentage Error: 47.8%
+  Median Error: 37.00
+  Maximum Error: 228
+  Within 1 step: 2.1%
+  Within 5 steps: 7.7%
+  Within 10 steps: 14.6%
+
+Adaptive:
+  Mean Absolute Error: 46.81
+  Root Mean Square Error: 57.60
+  Mean Absolute Percentage Error: 60.8%
+  Median Error: 41.00
+  Maximum Error: 224
+  Within 1 step: 1.5%
+  Within 5 steps: 6.7%
+  Within 10 steps: 12.4%
+
+Hybrid:
+  Mean Absolute Error: 41.98
+  Root Mean Square Error: 51.75
+  Mean Absolute Percentage Error: 47.3%
+  Median Error: 37.00
+  Maximum Error: 213
+  Within 1 step: 2.0%
+  Within 5 steps: 7.4%
+  Within 10 steps: 13.8%
+
+Basic-100 - Error Correlations:
+  log_number: 0.088 ***
+  number_length: 0.075 ***
+  hamming_weight: 0.051 ***
+  mod_8: 0.018 
+  actual_steps: 0.809 ***
+
+Mod-8 - Error Correlations:
+  log_number: 0.124 ***
+  number_length: 0.103 ***
+  hamming_weight: 0.077 ***
+  mod_8: 0.026 **
+  actual_steps: 0.942 ***
+
+Mod-16 - Error Correlations:
+  log_number: 0.127 ***
+  number_length: 0.105 ***
+  hamming_weight: 0.053 ***
+  mod_8: 0.016 
+  actual_steps: 0.923 ***
+
+Mod-32 - Error Correlations:
+  log_number: 0.126 ***
+  number_length: 0.104 ***
+  hamming_weight: 0.043 ***
+  mod_8: 0.024 *
+  actual_steps: 0.915 ***
+
+Binary - Error Correlations:
+  log_number: 0.127 ***
+  number_length: 0.105 ***
+  hamming_weight: 0.053 ***
+  mod_8: 0.016 
+  actual_steps: 0.923 ***
+
+Magnitude - Error Correlations:
+  log_number: 0.011 
+  number_length: -0.006 
+  hamming_weight: 0.036 ***
+  mod_8: 0.042 ***
+  actual_steps: 0.666 ***
+
+Adaptive - Error Correlations:
+  log_number: 0.003 
+  number_length: 0.000 
+  hamming_weight: 0.013 
+  mod_8: 0.017 
+  actual_steps: 0.243 ***
+
+Hybrid - Error Correlations:
+  log_number: -0.002 
+  number_length: -0.025 *
+  hamming_weight: 0.027 **
+  mod_8: 0.037 ***
+  actual_steps: 0.646 ***
+
+================================================================================
+PROBLEMATIC CASES ANALYSIS (Error > 15)
+================================================================================
+
+Basic-100: 7904 problematic cases
+  Average problematic number: 26357
+  Average error: 65.6
+  Number range: 2008 - 49987
+  Worst cases:
+    n=47329: predicted=45, actual=313, error=268
+    n=32913: predicted=9, actual=266, error=257
+    n=32913: predicted=9, actual=266, error=257
+
+Mod-8: 7405 problematic cases
+  Average problematic number: 26889
+  Average error: 69.0
+  Number range: 2008 - 49984
+  Worst cases:
+    n=35655: predicted=67, actual=323, error=256
+    n=47329: predicted=69, actual=313, error=244
+    n=49368: predicted=33, actual=264, error=231
+
+Mod-16: 7559 problematic cases
+  Average problematic number: 26876
+  Average error: 68.9
+  Number range: 2008 - 49984
+  Worst cases:
+    n=47329: predicted=50, actual=313, error=263
+    n=35655: predicted=67, actual=323, error=256
+    n=49368: predicted=33, actual=264, error=231
+
+Mod-32: 7635 problematic cases
+  Average problematic number: 26856
+  Average error: 69.7
+  Number range: 2008 - 49984
+  Worst cases:
+    n=35655: predicted=78, actual=323, error=245
+    n=47329: predicted=69, actual=313, error=244
+    n=32913: predicted=39, actual=266, error=227
+
+Binary: 7559 problematic cases
+  Average problematic number: 26876
+  Average error: 68.9
+  Number range: 2008 - 49984
+  Worst cases:
+    n=47329: predicted=50, actual=313, error=263
+    n=35655: predicted=67, actual=323, error=256
+    n=49368: predicted=33, actual=264, error=231
+
+Magnitude: 7912 problematic cases
+  Average problematic number: 26471
+  Average error: 51.3
+  Number range: 2008 - 49987
+  Worst cases:
+    n=35655: predicted=95, actual=323, error=228
+    n=47329: predicted=89, actual=313, error=224
+    n=9257: predicted=51, actual=259, error=208
+
+Adaptive: 8107 problematic cases
+  Average problematic number: 26108
+  Average error: 55.9
+  Number range: 2015 - 49987
+  Worst cases:
+    n=32913: predicted=42, actual=266, error=224
+    n=47329: predicted=93, actual=313, error=220
+    n=32913: predicted=52, actual=266, error=214
+
+Hybrid: 8011 problematic cases
+  Average problematic number: 26430
+  Average error: 50.5
+  Number range: 2008 - 49987
+  Worst cases:
+    n=47329: predicted=100, actual=313, error=213
+    n=35655: predicted=110, actual=323, error=213
+    n=49368: predicted=70, actual=264, error=194
+
+================================================================================
+IMPROVEMENT SUGGESTIONS
+================================================================================
+
+Basic-100:
+  • Strong correlation with actual_steps (r=0.809)
+
+Mod-8:
+  • Strong correlation with actual_steps (r=0.942)
+
+Mod-16:
+  • Strong correlation with actual_steps (r=0.923)
+
+Mod-32:
+  • Strong correlation with actual_steps (r=0.915)
+
+Binary:
+  • Strong correlation with actual_steps (r=0.923)
+
+Magnitude:
+  • Strong correlation with actual_steps (r=0.666)
+
+Hybrid:
+  • Strong correlation with actual_steps (r=0.646)
+
+====================================================================================================
+COMPREHENSIVE MARKOV CHAIN COLLATZ TRAJECTORY TESTER REPORT
+====================================================================================================
+
+🏆 BEST PERFORMING CHAIN: Mod-8 (9.7% within 5 steps)
+📊 TOTAL TESTS CONDUCTED: 80000
+🔬 MARKOV CHAIN TYPES TESTED: 8
+
+🔍 KEY FINDINGS:
+   • Error correlation analysis completed
+   • Problematic cases identified and analyzed
+   • Improvement suggestions generated
+
+💡 RECOMMENDATIONS:
+   • Use ensemble of top-performing chains for best accuracy
+   • Focus on magnitude-based features for large numbers
+   • Consider adaptive learning for continuous improvement
+
+=== STDERR ===
+INFO:__main__:Generating training data...
+INFO:__main__:Training Basic-100 Markov Chain...
+INFO:__main__:Basic-100 training completed with 100 states
+INFO:__main__:Training Mod-8 Markov Chain...
+INFO:__main__:Mod-8 training completed with 8 states
+INFO:__main__:Training Mod-16 Markov Chain...
+INFO:__main__:Mod-16 training completed with 16 states
+INFO:__main__:Training Mod-32 Markov Chain...
+INFO:__main__:Mod-32 training completed with 32 states
+INFO:__main__:Training Binary Markov Chain...
+INFO:__main__:Binary training completed with 16 states
+INFO:__main__:Training Magnitude Markov Chain...
+INFO:__main__:Magnitude training completed with 18 states
+INFO:__main__:Training Adaptive Markov Chain...
+INFO:__main__:Adaptive training completed with 100 states
+INFO:__main__:Training Hybrid Markov Chain...
+INFO:__main__:Hybrid training completed with 183 states
+INFO:__main__:Running comprehensive test with 10000 random numbers...
+INFO:__main__:Testing number 1/10000: 18657
+INFO:__main__:Testing number 101/10000: 26108
+INFO:__main__:Testing number 201/10000: 4506
+INFO:__main__:Testing number 301/10000: 42012
+INFO:__main__:Testing number 401/10000: 8414
+INFO:__main__:Testing number 501/10000: 16178
+INFO:__main__:Testing number 601/10000: 38401
+INFO:__main__:Testing number 701/10000: 26836
+INFO:__main__:Testing number 801/10000: 49035
+INFO:__main__:Testing number 901/10000: 23379
+INFO:__main__:Testing number 1001/10000: 12105
+INFO:__main__:Testing number 1101/10000: 10898
+INFO:__main__:Testing number 1201/10000: 35708
+INFO:__main__:Testing number 1301/10000: 11654
+INFO:__main__:Testing number 1401/10000: 25642
+INFO:__main__:Testing number 1501/10000: 46688
+INFO:__main__:Testing number 1601/10000: 13386
+INFO:__main__:Testing number 1701/10000: 12165
+INFO:__main__:Testing number 1801/10000: 21190
+INFO:__main__:Testing number 1901/10000: 24459
+INFO:__main__:Testing number 2001/10000: 3766
+INFO:__main__:Testing number 2101/10000: 7464
+INFO:__main__:Testing number 2201/10000: 30620
+INFO:__main__:Testing number 2301/10000: 12750
+INFO:__main__:Testing number 2401/10000: 42998
+INFO:__main__:Testing number 2501/10000: 48800
+INFO:__main__:Testing number 2601/10000: 34708
+INFO:__main__:Testing number 2701/10000: 10355
+INFO:__main__:Testing number 2801/10000: 46912
+INFO:__main__:Testing number 2901/10000: 42496
+INFO:__main__:Testing number 3001/10000: 49868
+INFO:__main__:Testing number 3101/10000: 24745
+INFO:__main__:Testing number 3201/10000: 6026
+INFO:__main__:Testing number 3301/10000: 38966
+INFO:__main__:Testing number 3401/10000: 9991
+INFO:__main__:Testing number 3501/10000: 47045
+INFO:__main__:Testing number 3601/10000: 13979
+INFO:__main__:Testing number 3701/10000: 26922
+INFO:__main__:Testing number 3801/10000: 21878
+INFO:__main__:Testing number 3901/10000: 44270
+INFO:__main__:Testing number 4001/10000: 25358
+INFO:__main__:Testing number 4101/10000: 45100
+INFO:__main__:Testing number 4201/10000: 24731
+INFO:__main__:Testing number 4301/10000: 24586
+INFO:__main__:Testing number 4401/10000: 25098
+INFO:__main__:Testing number 4501/10000: 11532
+INFO:__main__:Testing number 4601/10000: 33064
+INFO:__main__:Testing number 4701/10000: 4141
+INFO:__main__:Testing number 4801/10000: 20368
+INFO:__main__:Testing number 4901/10000: 18672
+INFO:__main__:Testing number 5001/10000: 13943
+INFO:__main__:Testing number 5101/10000: 48183
+INFO:__main__:Testing number 5201/10000: 29990
+INFO:__main__:Testing number 5301/10000: 21422
+INFO:__main__:Testing number 5401/10000: 48923
+INFO:__main__:Testing number 5501/10000: 30424
+INFO:__main__:Testing number 5601/10000: 6229
+INFO:__main__:Testing number 5701/10000: 40216
+INFO:__main__:Testing number 5801/10000: 10226
+INFO:__main__:Testing number 5901/10000: 33222
+INFO:__main__:Testing number 6001/10000: 24910
+INFO:__main__:Testing number 6101/10000: 37534
+INFO:__main__:Testing number 6201/10000: 22264
+INFO:__main__:Testing number 6301/10000: 49226
+INFO:__main__:Testing number 6401/10000: 12167
+INFO:__main__:Testing number 6501/10000: 21932
+INFO:__main__:Testing number 6601/10000: 24561
+INFO:__main__:Testing number 6701/10000: 8942
+INFO:__main__:Testing number 6801/10000: 33948
+INFO:__main__:Testing number 6901/10000: 41264
+INFO:__main__:Testing number 7001/10000: 5630
+INFO:__main__:Testing number 7101/10000: 48798
+INFO:__main__:Testing number 7201/10000: 5310
+INFO:__main__:Testing number 7301/10000: 10956
+INFO:__main__:Testing number 7401/10000: 47576
+INFO:__main__:Testing number 7501/10000: 10447
+INFO:__main__:Testing number 7601/10000: 46061
+INFO:__main__:Testing number 7701/10000: 10149
+INFO:__main__:Testing number 7801/10000: 39047
+INFO:__main__:Testing number 7901/10000: 26171
+INFO:__main__:Testing number 8001/10000: 33628
+INFO:__main__:Testing number 8101/10000: 25699
+INFO:__main__:Testing number 8201/10000: 25818
+INFO:__main__:Testing number 8301/10000: 15167
+INFO:__main__:Testing number 8401/10000: 44751
+INFO:__main__:Testing number 8501/10000: 26222
+INFO:__main__:Testing number 8601/10000: 8280
+INFO:__main__:Testing number 8701/10000: 42887
+INFO:__main__:Testing number 8801/10000: 24119
+INFO:__main__:Testing number 8901/10000: 49419
+INFO:__main__:Testing number 9001/10000: 17448
+INFO:__main__:Testing number 9101/10000: 36706
+INFO:__main__:Testing number 9201/10000: 15994
+INFO:__main__:Testing number 9301/10000: 39683
+INFO:__main__:Testing number 9401/10000: 43383
+INFO:__main__:Testing number 9501/10000: 5594
+INFO:__main__:Testing number 9601/10000: 28112
+INFO:__main__:Testing number 9701/10000: 34798
+INFO:__main__:Testing number 9801/10000: 32785
+INFO:__main__:Testing number 9901/10000: 34485
+INFO:__main__:Analyzing error correlations...
+INFO:__main__:Implementing improvements based on error analysis...
+
+=== EXIT CODE: 0 ===

@@ -1,0 +1,305 @@
+=== STDOUT ===
+hmmlearn not available - HMM analysis will be skipped
+gplearn not available - symbolic regression will be skipped
+ripser/persim not available - topological analysis will be skipped
+Initializing Advanced Collatz Conjecture Analyzer...
+================================================================================
+COMPREHENSIVE COLLATZ CONJECTURE ANALYSIS
+================================================================================
+Analysis range: 1 to 3000 (step: 1)
+Total numbers to analyze: 3000
+Generating Collatz data for numbers 1 to 3000...
+Processing 1000...
+Processing 2000...
+Processing 3000...
+Extracting comprehensive features...
+Feature extraction progress: 0/3000
+Feature extraction progress: 500/3000
+Feature extraction progress: 1000/3000
+Feature extraction progress: 1500/3000
+Feature extraction progress: 2000/3000
+Feature extraction progress: 2500/3000
+
+==================================================
+BASIC PATTERN ANALYSIS
+==================================================
+Mean stopping time: 71.69
+Std stopping time: 43.90
+Max stopping time: 216
+Min stopping time: 0
+
+Top 10 correlations with stopping time:
+largest_odd_divisor: 0.2732
+max_value: 0.2638
+popcount: 0.2542
+log2_n: 0.2524
+binary_length: 0.2458
+p_adic_valuation_2: 0.2232
+trailing_zeros: 0.2232
+number: 0.2146
+mod_4: 0.2088
+mod_16: 0.1704
+
+==================================================
+MARKOV CHAIN ANALYSIS (BASE 2)
+==================================================
+Number of observed states: 4
+Top 10 most common transitions:
+1. 10 -> 1: 6673 times
+2. 0 -> 10: 6430 times
+3. 1 -> 0: 6284 times
+4. 11 -> 10: 6212 times
+5. 10 -> 11: 6056 times
+6. 0 -> 0: 5725 times
+
+==================================================
+MARKOV CHAIN ANALYSIS (BASE 3)
+==================================================
+Number of observed states: 9
+Top 10 most common transitions:
+1. 21 -> 22: 8427 times
+2. 11 -> 2: 5984 times
+3. 22 -> 11: 4322 times
+4. 22 -> 21: 4108 times
+5. 2 -> 1: 3193 times
+6. 2 -> 21: 2831 times
+7. 11 -> 11: 2324 times
+8. 12 -> 21: 1981 times
+9. 1 -> 12: 1904 times
+10. 1 -> 11: 1148 times
+HMM analysis skipped - hmmlearn not available
+
+==================================================
+MACHINE LEARNING ANALYSIS
+==================================================
+
+Training Linear Regression...
+  MSE: 1676.6379
+  MAE: 35.8790
+  R²: 0.1222
+  CV R² (mean ± std): 0.0862 ± 0.0416
+
+Training Ridge Regression...
+  MSE: 1674.3192
+  MAE: 35.8622
+  R²: 0.1234
+  CV R² (mean ± std): 0.0866 ± 0.0418
+
+Training Random Forest...
+  MSE: 1213.4569
+  MAE: 28.0431
+  R²: 0.3647
+  CV R² (mean ± std): 0.1956 ± 0.0659
+
+Training Gradient Boosting...
+  MSE: 1508.7355
+  MAE: 33.6801
+  R²: 0.2101
+  CV R² (mean ± std): -0.0685 ± 0.1391
+
+Training Huber Regressor...
+  MSE: 1684.1883
+  MAE: 34.7886
+  R²: 0.1183
+  CV R² (mean ± std): 0.0681 ± 0.0450
+
+Top 10 Feature Importance (Random Forest):
+  largest_odd_divisor: 0.3117
+  largest_prime_factor: 0.2168
+  log2_n: 0.1310
+  popcount: 0.0895
+  mod_16: 0.0572
+  mod_8: 0.0371
+  p_adic_valuation_3: 0.0259
+  p_adic_valuation_5: 0.0175
+  p_adic_valuation_7: 0.0160
+  prime_factor_count: 0.0148
+
+==================================================
+CROSS-VALIDATION ANALYSIS
+==================================================
+
+Time-Series Cross-Validation (by number size):
+  Fold 1: R² = 0.1487, Train range: 1-750, Test range: 751-1500
+  Fold 2: R² = 0.1787, Train range: 1-1500, Test range: 1501-2250
+  Fold 3: R² = 0.1282, Train range: 1-2250, Test range: 2251-3000
+  Mean CV R²: 0.1519 ± 0.0207
+
+==================================================
+POWER LAW ANALYSIS
+==================================================
+Power law fit: stopping_time ≈ 10.0607 * n^0.2493
+R² = 0.1239
+P-value = 3.23e-88
+
+Curve fitting results:
+Power law: a=21.2787, b=0.1715
+Logarithmic: a=11.1684, b=-6.5830
+
+==================================================
+INVARIANT PATTERN ANALYSIS
+==================================================
+Analyzing patterns up to 3000...
+Range 1-1000: slope=11.4113, R²=0.0757, n=999
+Range 1000-5000: slope=10.1466, R²=0.0050, n=2001
+
+Pattern Consistency Summary:
+Log regression slopes: ['11.4113', '10.1466']
+Mean slope: 10.7789 ± 0.6324
+R² values: ['0.0757', '0.0050']
+Mean R²: 0.0404
+Slope coefficient of variation: 0.0587
+✓ Strong invariance detected in logarithmic relationship
+
+==================================================
+ROBUST PATTERN DETECTION
+==================================================
+Huber: MAE=34.7832, R²=0.1060
+RANSAC: MAE=43.0551, R²=-0.5267
+Quantile_50: MAE=35.2523, R²=-0.0334
+
+Outlier Detection:
+Detected 300 outliers (10.0%)
+Outlier number range: 1 - 3000
+Outlier stopping time range: 0 - 177
+Symbolic regression skipped - gplearn not available
+
+==================================================
+INFORMATION-THEORETIC ANALYSIS
+==================================================
+Top 10 Feature-Target Mutual Information:
+  log2_n: 2.6709
+  largest_odd_divisor: 1.3754
+  binary_length: 0.9379
+  popcount: 0.2164
+  is_perfect_square: 0.0201
+  is_perfect_cube: 0.0191
+  is_power_of_2: 0.0135
+  mod_16: 0.0124
+  trailing_zeros: 0.0087
+  mod_8: 0.0024
+Topological analysis skipped - ripser/persim not available
+
+==================================================
+ENTROPY ANALYSIS
+==================================================
+Mean trajectory entropy: 2.9941
+Entropy std: 0.1728
+Entropy range: 1.0000 - 3.3219
+
+==================================================
+GENERATING VISUALIZATIONS
+==================================================
+Plotting sample trajectories...
+
+================================================================================
+COMPREHENSIVE RESEARCH RECOMMENDATIONS FOR IMPROVED ACCURACY
+================================================================================
+
+1. COMPUTATIONAL SCALING & INFRASTRUCTURE:
+   • Extend analysis to n > 10^8 using distributed computing frameworks (Dask, Ray)
+   • Implement GPU acceleration with CUDA/OpenCL for parallel trajectory computation
+   • Use Apache Spark for large-scale data processing and feature extraction
+   • Implement incremental learning to handle streaming data efficiently
+   • Set up cloud computing resources for massive parallel processing
+
+2. ADVANCED FEATURE ENGINEERING:
+   • Extract trajectory shape features: curvature, turning points, acceleration
+   • Implement p-adic analysis across multiple prime bases simultaneously
+   • Add continued fraction convergent properties and periodic patterns
+   • Include arithmetic progression membership and density features
+   • Develop graph-theoretic features modeling number relationships
+   • Extract spectral features from trajectory Fourier transforms
+
+3. SOPHISTICATED MACHINE LEARNING:
+   • Deep neural networks with attention mechanisms for sequence modeling
+   • Transformer architectures pre-trained on mathematical sequences
+   • Graph Neural Networks modeling the Collatz graph structure
+   • Reinforcement learning to discover optimal prediction strategies
+   • Ensemble methods combining 10+ diverse base predictors
+   • Meta-learning approaches for few-shot prediction of rare patterns
+
+4. MATHEMATICAL PATTERN DISCOVERY:
+   • Automated theorem proving systems for pattern verification
+   • Symbolic regression with constraints from number theory
+   • Topological data analysis with multi-scale persistent homology
+   • Information-theoretic measures: mutual information, transfer entropy
+   • Dynamical systems analysis: Lyapunov exponents, fractal dimensions
+   • Connection analysis to other famous sequences (Fibonacci, primes, etc.)
+
+5. ADVANCED VALIDATION FRAMEWORKS:
+   • Multi-scale cross-validation: test patterns across 5+ orders of magnitude
+   • Bayesian model selection with proper prior specification
+   • Bootstrap confidence intervals with bias correction
+   • Permutation tests for statistical significance of discovered patterns
+   • Out-of-distribution testing on numbers with special properties
+   • Temporal validation: train on historical computations, test on new ranges
+
+6. THEORETICAL INTEGRATION:
+   • Incorporate known bounds: Terras' theorem, Krasikov-Lagarias bounds
+   • Connect to analytic number theory: L-functions, zeta functions
+   • Study connections to random walk theory and Brownian motion
+   • Investigate relationships with other unsolved problems (twin primes, etc.)
+   • Apply techniques from algebraic number theory and Diophantine analysis
+
+7. SPECIALIZED ALGORITHMS:
+   • Variable-length Markov chains with context-sensitive state spaces
+   • Hidden Markov models with infinite state spaces using Dirichlet processes
+   • Recurrent neural networks with external memory mechanisms
+   • Attention-based sequence-to-sequence models for trajectory prediction
+   • Gaussian processes with specialized kernels for number-theoretic functions
+
+8. INVARIANCE & UNIVERSALITY:
+   • Test scale invariance using renormalization group techniques
+   • Search for universal scaling laws independent of starting conditions
+   • Investigate modular arithmetic patterns across different bases
+   • Study geometric properties invariant under Collatz transformations
+   • Look for connections to universality classes in statistical mechanics
+
+
+================================================================================
+EXPECTED OUTCOMES & SUCCESS METRICS
+================================================================================
+
+QUANTITATIVE TARGETS:
+• Prediction Accuracy: Target R² > 0.8 for stopping time prediction
+• Pattern Consistency: >99% invariance across ranges 10^6 to 10^12
+• Computational Efficiency: Process 10^9 numbers in <24 hours
+• Feature Stability: Top 10 features maintain >90% ranking stability
+• Cross-validation: <5% variance in performance across different ranges
+
+QUALITATIVE BREAKTHROUGHS:
+• Discovery of previously unknown mathematical relationships
+• Identification of number classes with provably bounded stopping times
+• Connection to other areas of mathematics (algebraic geometry, etc.)
+• Development of new computational methods applicable to other problems
+• Theoretical insights leading to progress on the conjecture proof
+
+RESEARCH IMPACT:
+• Publications in top-tier mathematics and computer science journals
+• Open-source software tools for mathematical sequence analysis
+• Educational resources for computational number theory
+• Inspiration for new research directions in algorithmic mathematics
+
+================================================================================
+
+================================================================================
+ANALYSIS COMPLETE
+================================================================================
+
+Saving analysis results...
+
+FINAL SUMMARY:
+==================================================
+Total Numbers Analyzed: 3000
+Max Stopping Time: 216
+Mean Stopping Time: 71.68766666666667
+Ml Best R2: 0.36470908528724344
+Pattern Consistency Score: 2
+
+Analysis completed successfully!
+Results stored in 'analyzer' object for further investigation.
+
+=== STDERR ===
+
+=== EXIT CODE: 0 ===

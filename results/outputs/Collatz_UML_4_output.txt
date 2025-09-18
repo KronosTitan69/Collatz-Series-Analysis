@@ -1,0 +1,946 @@
+=== STDOUT ===
+parity: 0.004
+mod3: 0.009
+mod4: 0.009
+mod5: 0.014
+log_start: 0.228
+max_val: 0.029
+odd_steps: 0.190
+even_steps: 0.259
+odd_even_ratio: 0.259
+Transition matrix (parity):
+ [[0.49404124 0.50595876]
+ [1.         0.        ]]
+
+Stopping time: 0 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 1 (Count: 1)
+  Odd: 0, Even: 1
+  mod3 breakdown: [0, 0, 1]
+
+Stopping time: 7 (Count: 4)
+  Odd: 2, Even: 2
+  mod3 breakdown: [2, 0, 2]
+
+Stopping time: 2 (Count: 1)
+  Odd: 0, Even: 1
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 5 (Count: 2)
+  Odd: 1, Even: 1
+  mod3 breakdown: [0, 0, 2]
+
+Stopping time: 8 (Count: 4)
+  Odd: 0, Even: 4
+  mod3 breakdown: [2, 2, 0]
+
+Stopping time: 16 (Count: 22)
+  Odd: 5, Even: 17
+  mod3 breakdown: [8, 8, 6]
+  KMeans cluster counts: [8 8 6]
+
+Stopping time: 3 (Count: 1)
+  Odd: 0, Even: 1
+  mod3 breakdown: [0, 0, 1]
+
+Stopping time: 19 (Count: 32)
+  Odd: 10, Even: 22
+  mod3 breakdown: [11, 11, 10]
+  KMeans cluster counts: [13 12  7]
+
+Stopping time: 6 (Count: 2)
+  Odd: 0, Even: 2
+  mod3 breakdown: [0, 2, 0]
+
+Stopping time: 14 (Count: 17)
+  Odd: 4, Even: 13
+  mod3 breakdown: [7, 5, 5]
+  KMeans cluster counts: [10  4  3]
+
+Stopping time: 9 (Count: 6)
+  Odd: 2, Even: 4
+  mod3 breakdown: [2, 2, 2]
+
+Stopping time: 17 (Count: 28)
+  Odd: 6, Even: 22
+  mod3 breakdown: [10, 8, 10]
+  KMeans cluster counts: [ 4 13 11]
+
+Stopping time: 4 (Count: 1)
+  Odd: 0, Even: 1
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 12 (Count: 10)
+  Odd: 2, Even: 8
+  mod3 breakdown: [2, 4, 4]
+  KMeans cluster counts: [4 2 4]
+
+Stopping time: 20 (Count: 44)
+  Odd: 12, Even: 32
+  mod3 breakdown: [15, 15, 14]
+  KMeans cluster counts: [26 10  8]
+
+Stopping time: 15 (Count: 17)
+  Odd: 5, Even: 12
+  mod3 breakdown: [7, 6, 4]
+  KMeans cluster counts: [7 6 4]
+
+Stopping time: 10 (Count: 6)
+  Odd: 0, Even: 6
+  mod3 breakdown: [2, 2, 2]
+
+Stopping time: 23 (Count: 28)
+  Odd: 10, Even: 18
+  mod3 breakdown: [8, 11, 9]
+  KMeans cluster counts: [ 9  8 11]
+
+Stopping time: 111 (Count: 11)
+  Odd: 4, Even: 7
+  mod3 breakdown: [4, 4, 3]
+  KMeans cluster counts: [3 5 3]
+
+Stopping time: 18 (Count: 22)
+  Odd: 6, Even: 16
+  mod3 breakdown: [8, 7, 7]
+  KMeans cluster counts: [ 6 11  5]
+
+Stopping time: 106 (Count: 9)
+  Odd: 3, Even: 6
+  mod3 breakdown: [3, 4, 2]
+
+Stopping time: 26 (Count: 38)
+  Odd: 15, Even: 23
+  mod3 breakdown: [12, 13, 13]
+  KMeans cluster counts: [16  8 14]
+
+Stopping time: 13 (Count: 13)
+  Odd: 4, Even: 9
+  mod3 breakdown: [4, 4, 5]
+  KMeans cluster counts: [4 3 6]
+
+Stopping time: 21 (Count: 32)
+  Odd: 10, Even: 22
+  mod3 breakdown: [11, 11, 10]
+  KMeans cluster counts: [18  7  7]
+
+Stopping time: 34 (Count: 47)
+  Odd: 22, Even: 25
+  mod3 breakdown: [16, 15, 16]
+  KMeans cluster counts: [18 17 12]
+
+Stopping time: 109 (Count: 13)
+  Odd: 5, Even: 8
+  mod3 breakdown: [4, 5, 4]
+  KMeans cluster counts: [4 5 4]
+
+Stopping time: 29 (Count: 49)
+  Odd: 19, Even: 30
+  mod3 breakdown: [14, 18, 17]
+  KMeans cluster counts: [16 19 14]
+
+Stopping time: 104 (Count: 16)
+  Odd: 9, Even: 7
+  mod3 breakdown: [6, 7, 3]
+  KMeans cluster counts: [5 6 5]
+
+Stopping time: 11 (Count: 8)
+  Odd: 2, Even: 6
+  mod3 breakdown: [2, 2, 4]
+
+Stopping time: 24 (Count: 43)
+  Odd: 15, Even: 28
+  mod3 breakdown: [13, 15, 15]
+  KMeans cluster counts: [19 16  8]
+
+Stopping time: 112 (Count: 19)
+  Odd: 8, Even: 11
+  mod3 breakdown: [6, 6, 7]
+  KMeans cluster counts: [4 9 6]
+
+Stopping time: 32 (Count: 66)
+  Odd: 26, Even: 40
+  mod3 breakdown: [22, 22, 22]
+  KMeans cluster counts: [19 23 24]
+
+Stopping time: 107 (Count: 22)
+  Odd: 13, Even: 9
+  mod3 breakdown: [10, 7, 5]
+  KMeans cluster counts: [ 7  5 10]
+
+Stopping time: 27 (Count: 61)
+  Odd: 23, Even: 38
+  mod3 breakdown: [21, 21, 19]
+  KMeans cluster counts: [27 24 10]
+
+Stopping time: 102 (Count: 26)
+  Odd: 14, Even: 12
+  mod3 breakdown: [9, 8, 9]
+  KMeans cluster counts: [ 9 11  6]
+
+Stopping time: 22 (Count: 46)
+  Odd: 14, Even: 32
+  mod3 breakdown: [17, 14, 15]
+  KMeans cluster counts: [17 18 11]
+
+Stopping time: 115 (Count: 29)
+  Odd: 12, Even: 17
+  mod3 breakdown: [8, 11, 10]
+  KMeans cluster counts: [13 10  6]
+
+Stopping time: 35 (Count: 82)
+  Odd: 35, Even: 47
+  mod3 breakdown: [25, 27, 30]
+  KMeans cluster counts: [23 22 37]
+
+Stopping time: 110 (Count: 25)
+  Odd: 12, Even: 13
+  mod3 breakdown: [10, 7, 8]
+  KMeans cluster counts: [9 8 8]
+
+Stopping time: 30 (Count: 81)
+  Odd: 32, Even: 49
+  mod3 breakdown: [28, 27, 26]
+  KMeans cluster counts: [24 39 18]
+
+Stopping time: 92 (Count: 27)
+  Odd: 15, Even: 12
+  mod3 breakdown: [6, 12, 9]
+  KMeans cluster counts: [12  6  9]
+
+Stopping time: 105 (Count: 33)
+  Odd: 17, Even: 16
+  mod3 breakdown: [12, 8, 13]
+  KMeans cluster counts: [13 14  6]
+
+Stopping time: 118 (Count: 44)
+  Odd: 20, Even: 24
+  mod3 breakdown: [13, 15, 16]
+  KMeans cluster counts: [14 20 10]
+
+Stopping time: 25 (Count: 64)
+  Odd: 21, Even: 43
+  mod3 breakdown: [21, 20, 23]
+  KMeans cluster counts: [27 22 15]
+
+Stopping time: 87 (Count: 29)
+  Odd: 16, Even: 13
+  mod3 breakdown: [9, 11, 9]
+  KMeans cluster counts: [ 7 12 10]
+
+Stopping time: 38 (Count: 107)
+  Odd: 47, Even: 60
+  mod3 breakdown: [41, 32, 34]
+  KMeans cluster counts: [48 32 27]
+
+Stopping time: 100 (Count: 36)
+  Odd: 19, Even: 17
+  mod3 breakdown: [12, 10, 14]
+  KMeans cluster counts: [13 14  9]
+
+Stopping time: 113 (Count: 35)
+  Odd: 16, Even: 19
+  mod3 breakdown: [10, 13, 12]
+  KMeans cluster counts: [15 14  6]
+
+Stopping time: 69 (Count: 53)
+  Odd: 32, Even: 21
+  mod3 breakdown: [19, 18, 16]
+  KMeans cluster counts: [10 19 24]
+
+Stopping time: 33 (Count: 92)
+  Odd: 34, Even: 58
+  mod3 breakdown: [32, 29, 31]
+  KMeans cluster counts: [32 29 31]
+
+Stopping time: 95 (Count: 43)
+  Odd: 23, Even: 20
+  mod3 breakdown: [12, 16, 15]
+  KMeans cluster counts: [11 16 16]
+
+Stopping time: 46 (Count: 97)
+  Odd: 47, Even: 50
+  mod3 breakdown: [33, 31, 33]
+  KMeans cluster counts: [32 31 34]
+
+Stopping time: 108 (Count: 41)
+  Odd: 19, Even: 22
+  mod3 breakdown: [16, 13, 12]
+  KMeans cluster counts: [21  9 11]
+
+Stopping time: 121 (Count: 64)
+  Odd: 29, Even: 35
+  mod3 breakdown: [23, 22, 19]
+  KMeans cluster counts: [21 33 10]
+
+Stopping time: 28 (Count: 41)
+  Odd: 14, Even: 27
+  mod3 breakdown: [12, 11, 18]
+  KMeans cluster counts: [14 17 10]
+
+Stopping time: 41 (Count: 44)
+  Odd: 20, Even: 24
+  mod3 breakdown: [15, 16, 13]
+  KMeans cluster counts: [11 13 20]
+
+Stopping time: 90 (Count: 37)
+  Odd: 21, Even: 16
+  mod3 breakdown: [10, 15, 12]
+  KMeans cluster counts: [10 18  9]
+
+Stopping time: 103 (Count: 23)
+  Odd: 14, Even: 9
+  mod3 breakdown: [9, 7, 7]
+  KMeans cluster counts: [7 9 7]
+
+Stopping time: 116 (Count: 15)
+  Odd: 8, Even: 7
+  mod3 breakdown: [5, 4, 6]
+  KMeans cluster counts: [3 6 6]
+
+Stopping time: 36 (Count: 30)
+  Odd: 16, Even: 14
+  mod3 breakdown: [11, 11, 8]
+  KMeans cluster counts: [11  9 10]
+
+Stopping time: 85 (Count: 6)
+  Odd: 4, Even: 2
+  mod3 breakdown: [2, 1, 3]
+
+Stopping time: 54 (Count: 15)
+  Odd: 7, Even: 8
+  mod3 breakdown: [5, 5, 5]
+  KMeans cluster counts: [ 2 10  3]
+
+Stopping time: 98 (Count: 10)
+  Odd: 5, Even: 5
+  mod3 breakdown: [3, 4, 3]
+  KMeans cluster counts: [4 4 2]
+
+Stopping time: 67 (Count: 7)
+  Odd: 5, Even: 2
+  mod3 breakdown: [2, 1, 4]
+
+Stopping time: 49 (Count: 22)
+  Odd: 11, Even: 11
+  mod3 breakdown: [8, 8, 6]
+  KMeans cluster counts: [12  5  5]
+
+Stopping time: 124 (Count: 17)
+  Odd: 8, Even: 9
+  mod3 breakdown: [7, 4, 6]
+  KMeans cluster counts: [7 7 3]
+
+Stopping time: 31 (Count: 40)
+  Odd: 17, Even: 23
+  mod3 breakdown: [14, 14, 12]
+  KMeans cluster counts: [15 13 12]
+
+Stopping time: 80 (Count: 5)
+  Odd: 3, Even: 2
+  mod3 breakdown: [1, 3, 1]
+
+Stopping time: 93 (Count: 11)
+  Odd: 7, Even: 4
+  mod3 breakdown: [4, 3, 4]
+  KMeans cluster counts: [2 7 2]
+
+Stopping time: 44 (Count: 29)
+  Odd: 14, Even: 15
+  mod3 breakdown: [7, 10, 12]
+  KMeans cluster counts: [15  7  7]
+
+Stopping time: 119 (Count: 19)
+  Odd: 8, Even: 11
+  mod3 breakdown: [5, 8, 6]
+  KMeans cluster counts: [9 8 2]
+
+Stopping time: 39 (Count: 32)
+  Odd: 16, Even: 16
+  mod3 breakdown: [9, 10, 13]
+  KMeans cluster counts: [16 10  6]
+
+Stopping time: 88 (Count: 10)
+  Odd: 5, Even: 5
+  mod3 breakdown: [4, 3, 3]
+  KMeans cluster counts: [2 7 1]
+
+Stopping time: 101 (Count: 12)
+  Odd: 7, Even: 5
+  mod3 breakdown: [4, 5, 3]
+  KMeans cluster counts: [4 5 3]
+
+Stopping time: 114 (Count: 17)
+  Odd: 7, Even: 10
+  mod3 breakdown: [5, 5, 7]
+  KMeans cluster counts: [9 4 4]
+
+Stopping time: 52 (Count: 27)
+  Odd: 17, Even: 10
+  mod3 breakdown: [10, 10, 7]
+  KMeans cluster counts: [ 6 10 11]
+
+Stopping time: 70 (Count: 13)
+  Odd: 7, Even: 6
+  mod3 breakdown: [5, 5, 3]
+  KMeans cluster counts: [8 3 2]
+
+Stopping time: 127 (Count: 22)
+  Odd: 11, Even: 11
+  mod3 breakdown: [7, 6, 9]
+  KMeans cluster counts: [ 8 10  4]
+
+Stopping time: 83 (Count: 8)
+  Odd: 5, Even: 3
+  mod3 breakdown: [2, 2, 4]
+
+Stopping time: 96 (Count: 15)
+  Odd: 8, Even: 7
+  mod3 breakdown: [7, 3, 5]
+  KMeans cluster counts: [7 1 7]
+
+Stopping time: 47 (Count: 39)
+  Odd: 18, Even: 21
+  mod3 breakdown: [16, 12, 11]
+  KMeans cluster counts: [ 9 19 11]
+
+Stopping time: 65 (Count: 17)
+  Odd: 10, Even: 7
+  mod3 breakdown: [6, 6, 5]
+  KMeans cluster counts: [10  4  3]
+
+Stopping time: 122 (Count: 25)
+  Odd: 11, Even: 14
+  mod3 breakdown: [7, 10, 8]
+  KMeans cluster counts: [10  6  9]
+
+Stopping time: 78 (Count: 9)
+  Odd: 6, Even: 3
+  mod3 breakdown: [2, 4, 3]
+
+Stopping time: 42 (Count: 47)
+  Odd: 24, Even: 23
+  mod3 breakdown: [20, 13, 14]
+  KMeans cluster counts: [20 14 13]
+
+Stopping time: 91 (Count: 12)
+  Odd: 6, Even: 6
+  mod3 breakdown: [3, 2, 7]
+  KMeans cluster counts: [7 4 1]
+
+Stopping time: 60 (Count: 26)
+  Odd: 16, Even: 10
+  mod3 breakdown: [7, 11, 8]
+  KMeans cluster counts: [12  9  5]
+
+Stopping time: 117 (Count: 24)
+  Odd: 10, Even: 14
+  mod3 breakdown: [8, 8, 8]
+  KMeans cluster counts: [ 6 12  6]
+
+Stopping time: 55 (Count: 32)
+  Odd: 17, Even: 15
+  mod3 breakdown: [10, 10, 12]
+  KMeans cluster counts: [ 8  9 15]
+
+Stopping time: 73 (Count: 17)
+  Odd: 11, Even: 6
+  mod3 breakdown: [5, 7, 5]
+  KMeans cluster counts: [3 9 5]
+
+Stopping time: 37 (Count: 60)
+  Odd: 30, Even: 30
+  mod3 breakdown: [23, 21, 16]
+  KMeans cluster counts: [22 20 18]
+
+Stopping time: 86 (Count: 13)
+  Odd: 7, Even: 6
+  mod3 breakdown: [3, 5, 5]
+  KMeans cluster counts: [4 5 4]
+
+Stopping time: 130 (Count: 29)
+  Odd: 14, Even: 15
+  mod3 breakdown: [7, 11, 11]
+  KMeans cluster counts: [ 7 11 11]
+
+Stopping time: 99 (Count: 17)
+  Odd: 7, Even: 10
+  mod3 breakdown: [5, 5, 7]
+  KMeans cluster counts: [3 9 5]
+
+Stopping time: 143 (Count: 15)
+  Odd: 9, Even: 6
+  mod3 breakdown: [5, 4, 6]
+  KMeans cluster counts: [4 9 2]
+
+Stopping time: 50 (Count: 47)
+  Odd: 25, Even: 22
+  mod3 breakdown: [16, 14, 17]
+  KMeans cluster counts: [24 11 12]
+
+Stopping time: 68 (Count: 21)
+  Odd: 14, Even: 7
+  mod3 breakdown: [5, 9, 7]
+  KMeans cluster counts: [ 8 10  3]
+
+Stopping time: 125 (Count: 32)
+  Odd: 15, Even: 17
+  mod3 breakdown: [10, 11, 11]
+  KMeans cluster counts: [10 10 12]
+
+Stopping time: 81 (Count: 15)
+  Odd: 10, Even: 5
+  mod3 breakdown: [6, 4, 5]
+  KMeans cluster counts: [4 5 6]
+
+Stopping time: 45 (Count: 55)
+  Odd: 26, Even: 29
+  mod3 breakdown: [18, 19, 18]
+  KMeans cluster counts: [12 23 20]
+
+Stopping time: 94 (Count: 20)
+  Odd: 9, Even: 11
+  mod3 breakdown: [6, 6, 8]
+  KMeans cluster counts: [9 5 6]
+
+Stopping time: 63 (Count: 30)
+  Odd: 17, Even: 13
+  mod3 breakdown: [8, 12, 10]
+  KMeans cluster counts: [11 12  7]
+
+Stopping time: 58 (Count: 44)
+  Odd: 24, Even: 20
+  mod3 breakdown: [16, 12, 16]
+  KMeans cluster counts: [14 16 14]
+
+Stopping time: 120 (Count: 35)
+  Odd: 16, Even: 19
+  mod3 breakdown: [14, 10, 11]
+  KMeans cluster counts: [15 12  8]
+
+Stopping time: 76 (Count: 24)
+  Odd: 16, Even: 8
+  mod3 breakdown: [13, 5, 6]
+  KMeans cluster counts: [ 4  6 14]
+
+Stopping time: 40 (Count: 66)
+  Odd: 34, Even: 32
+  mod3 breakdown: [19, 23, 24]
+  KMeans cluster counts: [15 31 20]
+
+Stopping time: 133 (Count: 39)
+  Odd: 21, Even: 18
+  mod3 breakdown: [14, 13, 12]
+  KMeans cluster counts: [14 11 14]
+
+Stopping time: 89 (Count: 19)
+  Odd: 9, Even: 10
+  mod3 breakdown: [7, 6, 6]
+  KMeans cluster counts: [8 7 4]
+
+Stopping time: 53 (Count: 59)
+  Odd: 32, Even: 27
+  mod3 breakdown: [21, 21, 17]
+  KMeans cluster counts: [18 22 19]
+
+Stopping time: 71 (Count: 29)
+  Odd: 16, Even: 13
+  mod3 breakdown: [8, 10, 11]
+  KMeans cluster counts: [12  8  9]
+
+Stopping time: 97 (Count: 30)
+  Odd: 15, Even: 15
+  mod3 breakdown: [13, 10, 7]
+  KMeans cluster counts: [ 9 11 10]
+
+Stopping time: 128 (Count: 42)
+  Odd: 20, Even: 22
+  mod3 breakdown: [13, 15, 14]
+  KMeans cluster counts: [13 17 12]
+
+Stopping time: 84 (Count: 19)
+  Odd: 11, Even: 8
+  mod3 breakdown: [6, 6, 7]
+  KMeans cluster counts: [6 6 7]
+
+Stopping time: 48 (Count: 76)
+  Odd: 37, Even: 39
+  mod3 breakdown: [24, 27, 25]
+  KMeans cluster counts: [28 30 18]
+
+Stopping time: 141 (Count: 34)
+  Odd: 21, Even: 13
+  mod3 breakdown: [13, 12, 9]
+  KMeans cluster counts: [15 13  6]
+
+Stopping time: 66 (Count: 40)
+  Odd: 23, Even: 17
+  mod3 breakdown: [12, 14, 14]
+  KMeans cluster counts: [16 13 11]
+
+Stopping time: 61 (Count: 56)
+  Odd: 30, Even: 26
+  mod3 breakdown: [18, 21, 17]
+  KMeans cluster counts: [23 16 17]
+
+Stopping time: 123 (Count: 44)
+  Odd: 19, Even: 25
+  mod3 breakdown: [14, 15, 15]
+  KMeans cluster counts: [17 16 11]
+
+Stopping time: 79 (Count: 23)
+  Odd: 14, Even: 9
+  mod3 breakdown: [9, 4, 10]
+  KMeans cluster counts: [ 7  5 11]
+
+Stopping time: 43 (Count: 87)
+  Odd: 40, Even: 47
+  mod3 breakdown: [32, 29, 26]
+  KMeans cluster counts: [28 26 33]
+
+Stopping time: 136 (Count: 47)
+  Odd: 26, Even: 21
+  mod3 breakdown: [17, 15, 15]
+  KMeans cluster counts: [22 14 11]
+
+Stopping time: 56 (Count: 69)
+  Odd: 37, Even: 32
+  mod3 breakdown: [20, 25, 24]
+  KMeans cluster counts: [32 17 20]
+
+Stopping time: 74 (Count: 42)
+  Odd: 25, Even: 17
+  mod3 breakdown: [15, 11, 16]
+  KMeans cluster counts: [13 14 15]
+
+Stopping time: 131 (Count: 59)
+  Odd: 30, Even: 29
+  mod3 breakdown: [20, 18, 21]
+  KMeans cluster counts: [11 21 27]
+
+Stopping time: 51 (Count: 92)
+  Odd: 45, Even: 47
+  mod3 breakdown: [29, 31, 32]
+  KMeans cluster counts: [24 47 21]
+
+Stopping time: 144 (Count: 38)
+  Odd: 23, Even: 15
+  mod3 breakdown: [12, 15, 11]
+  KMeans cluster counts: [10 15 13]
+
+Stopping time: 64 (Count: 69)
+  Odd: 40, Even: 29
+  mod3 breakdown: [26, 21, 22]
+  KMeans cluster counts: [30 11 28]
+
+Stopping time: 126 (Count: 63)
+  Odd: 31, Even: 32
+  mod3 breakdown: [19, 24, 20]
+  KMeans cluster counts: [27 16 20]
+
+Stopping time: 82 (Count: 34)
+  Odd: 19, Even: 15
+  mod3 breakdown: [11, 12, 11]
+  KMeans cluster counts: [21  5  8]
+
+Stopping time: 170 (Count: 19)
+  Odd: 13, Even: 6
+  mod3 breakdown: [4, 7, 8]
+  KMeans cluster counts: [9 9 1]
+
+Stopping time: 139 (Count: 51)
+  Odd: 27, Even: 24
+  mod3 breakdown: [13, 17, 21]
+  KMeans cluster counts: [18 10 23]
+
+Stopping time: 59 (Count: 76)
+  Odd: 40, Even: 36
+  mod3 breakdown: [26, 26, 24]
+  KMeans cluster counts: [25 25 26]
+
+Stopping time: 152 (Count: 39)
+  Odd: 24, Even: 15
+  mod3 breakdown: [11, 13, 15]
+  KMeans cluster counts: [ 9 19 11]
+
+Stopping time: 77 (Count: 51)
+  Odd: 27, Even: 24
+  mod3 breakdown: [19, 19, 13]
+  KMeans cluster counts: [18 15 18]
+
+Stopping time: 72 (Count: 46)
+  Odd: 25, Even: 21
+  mod3 breakdown: [13, 15, 18]
+  KMeans cluster counts: [17 11 18]
+
+Stopping time: 134 (Count: 55)
+  Odd: 26, Even: 29
+  mod3 breakdown: [20, 17, 18]
+  KMeans cluster counts: [26 14 15]
+
+Stopping time: 147 (Count: 5)
+  Odd: 5, Even: 0
+  mod3 breakdown: [2, 3, 0]
+
+Stopping time: 178 (Count: 5)
+  Odd: 3, Even: 2
+  mod3 breakdown: [1, 3, 1]
+
+Stopping time: 129 (Count: 15)
+  Odd: 9, Even: 6
+  mod3 breakdown: [5, 4, 6]
+  KMeans cluster counts: [6 2 7]
+
+Stopping time: 173 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 142 (Count: 6)
+  Odd: 4, Even: 2
+  mod3 breakdown: [1, 2, 3]
+
+Stopping time: 62 (Count: 13)
+  Odd: 8, Even: 5
+  mod3 breakdown: [4, 3, 6]
+  KMeans cluster counts: [5 4 4]
+
+Stopping time: 155 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [1, 1, 0]
+
+Stopping time: 168 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [1, 0, 1]
+
+Stopping time: 75 (Count: 8)
+  Odd: 5, Even: 3
+  mod3 breakdown: [3, 3, 2]
+
+Stopping time: 137 (Count: 9)
+  Odd: 7, Even: 2
+  mod3 breakdown: [4, 2, 3]
+
+Stopping time: 57 (Count: 20)
+  Odd: 12, Even: 8
+  mod3 breakdown: [6, 7, 7]
+  KMeans cluster counts: [6 7 7]
+
+Stopping time: 150 (Count: 4)
+  Odd: 4, Even: 0
+  mod3 breakdown: [1, 1, 2]
+
+Stopping time: 181 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 163 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 132 (Count: 18)
+  Odd: 11, Even: 7
+  mod3 breakdown: [6, 6, 6]
+  KMeans cluster counts: [7 6 5]
+
+Stopping time: 176 (Count: 3)
+  Odd: 3, Even: 0
+  mod3 breakdown: [1, 1, 1]
+
+Stopping time: 145 (Count: 10)
+  Odd: 6, Even: 4
+  mod3 breakdown: [4, 1, 5]
+  KMeans cluster counts: [4 3 3]
+
+Stopping time: 158 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [1, 1, 0]
+
+Stopping time: 171 (Count: 3)
+  Odd: 2, Even: 1
+  mod3 breakdown: [1, 1, 1]
+
+Stopping time: 140 (Count: 13)
+  Odd: 10, Even: 3
+  mod3 breakdown: [5, 4, 4]
+  KMeans cluster counts: [4 4 5]
+
+Stopping time: 153 (Count: 7)
+  Odd: 5, Even: 2
+  mod3 breakdown: [3, 2, 2]
+
+Stopping time: 166 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [0, 0, 2]
+
+Stopping time: 135 (Count: 21)
+  Odd: 12, Even: 9
+  mod3 breakdown: [6, 8, 7]
+  KMeans cluster counts: [11  6  4]
+
+Stopping time: 179 (Count: 4)
+  Odd: 3, Even: 1
+  mod3 breakdown: [3, 0, 1]
+
+Stopping time: 148 (Count: 14)
+  Odd: 9, Even: 5
+  mod3 breakdown: [7, 3, 4]
+  KMeans cluster counts: [ 2 11  1]
+
+Stopping time: 161 (Count: 4)
+  Odd: 4, Even: 0
+  mod3 breakdown: [1, 2, 1]
+
+Stopping time: 174 (Count: 6)
+  Odd: 5, Even: 1
+  mod3 breakdown: [1, 2, 3]
+
+Stopping time: 156 (Count: 11)
+  Odd: 9, Even: 2
+  mod3 breakdown: [5, 4, 2]
+  KMeans cluster counts: [6 4 1]
+
+Stopping time: 169 (Count: 6)
+  Odd: 4, Even: 2
+  mod3 breakdown: [1, 3, 2]
+
+Stopping time: 138 (Count: 24)
+  Odd: 15, Even: 9
+  mod3 breakdown: [6, 8, 10]
+  KMeans cluster counts: [ 5 11  8]
+
+Stopping time: 182 (Count: 3)
+  Odd: 2, Even: 1
+  mod3 breakdown: [2, 1, 0]
+
+Stopping time: 151 (Count: 15)
+  Odd: 11, Even: 4
+  mod3 breakdown: [3, 7, 5]
+  KMeans cluster counts: [5 5 5]
+
+Stopping time: 164 (Count: 6)
+  Odd: 5, Even: 1
+  mod3 breakdown: [1, 3, 2]
+
+Stopping time: 208 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 177 (Count: 10)
+  Odd: 7, Even: 3
+  mod3 breakdown: [4, 3, 3]
+  KMeans cluster counts: [2 4 4]
+
+Stopping time: 146 (Count: 21)
+  Odd: 11, Even: 10
+  mod3 breakdown: [4, 8, 9]
+  KMeans cluster counts: [ 3 13  5]
+
+Stopping time: 190 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 159 (Count: 12)
+  Odd: 10, Even: 2
+  mod3 breakdown: [3, 5, 4]
+  KMeans cluster counts: [4 4 4]
+
+Stopping time: 172 (Count: 11)
+  Odd: 8, Even: 3
+  mod3 breakdown: [4, 2, 5]
+  KMeans cluster counts: [3 5 3]
+
+Stopping time: 216 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 154 (Count: 22)
+  Odd: 15, Even: 7
+  mod3 breakdown: [8, 5, 9]
+  KMeans cluster counts: [5 8 9]
+
+Stopping time: 185 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 167 (Count: 10)
+  Odd: 8, Even: 2
+  mod3 breakdown: [2, 4, 4]
+  KMeans cluster counts: [3 3 4]
+
+Stopping time: 198 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 1, 0]
+
+Stopping time: 180 (Count: 10)
+  Odd: 6, Even: 4
+  mod3 breakdown: [4, 4, 2]
+  KMeans cluster counts: [6 2 2]
+
+Stopping time: 149 (Count: 32)
+  Odd: 18, Even: 14
+  mod3 breakdown: [11, 10, 11]
+  KMeans cluster counts: [10 15  7]
+
+Stopping time: 162 (Count: 15)
+  Odd: 11, Even: 4
+  mod3 breakdown: [5, 5, 5]
+  KMeans cluster counts: [4 8 3]
+
+Stopping time: 193 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 206 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 0, 1]
+
+Stopping time: 237 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [1, 0, 0]
+
+Stopping time: 175 (Count: 15)
+  Odd: 9, Even: 6
+  mod3 breakdown: [3, 5, 7]
+  KMeans cluster counts: [3 4 8]
+
+Stopping time: 188 (Count: 4)
+  Odd: 4, Even: 0
+  mod3 breakdown: [2, 1, 1]
+
+Stopping time: 157 (Count: 29)
+  Odd: 18, Even: 11
+  mod3 breakdown: [9, 10, 10]
+  KMeans cluster counts: [13  9  7]
+
+Stopping time: 201 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [1, 1, 0]
+
+Stopping time: 183 (Count: 13)
+  Odd: 10, Even: 3
+  mod3 breakdown: [7, 5, 1]
+  KMeans cluster counts: [1 5 7]
+
+Stopping time: 214 (Count: 1)
+  Odd: 1, Even: 0
+  mod3 breakdown: [0, 0, 1]
+
+Stopping time: 165 (Count: 22)
+  Odd: 16, Even: 6
+  mod3 breakdown: [6, 8, 8]
+  KMeans cluster counts: [ 7 10  5]
+
+Stopping time: 196 (Count: 2)
+  Odd: 2, Even: 0
+  mod3 breakdown: [1, 0, 1]
+
+Stopping time: 209 (Count: 2)
+  Odd: 1, Even: 1
+  mod3 breakdown: [1, 1, 0]
+
+=== STDERR ===
+/home/runner/work/Collatz-Series-Analysis/Collatz-Series-Analysis/Collatz_UML_4:311: RuntimeWarning: invalid value encountered in divide
+  P = transitions / transitions.sum(axis=1, keepdims=True)
+
+=== EXIT CODE: 0 ===
