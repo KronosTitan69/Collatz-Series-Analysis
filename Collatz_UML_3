@@ -1,0 +1,637 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.decomposition import PCA
+from scipy import stats
+from scipy.sparse import csr_matrix
+from collections import defaultdict, Counter
+import warnings
+warnings.filterwarnings('ignore')
+
+class CollatzAnalyzer:
+    def __init__(self, max_n=10000, max_steps=1000):
+        self.max_n = max_n
+        self.max_steps = max_steps
+        self.stopping_times = {}
+        self.grouped_by_stopping_time = defaultdict(list)
+        self.features_df = None
+        self.models = {}
+        self.scaler = StandardScaler()
+
+    def collatz_stopping_time(self, n):
+        """Calculate stopping time for Collatz sequence"""
+        if n <= 0:
+            return 0
+
+        original_n = n
+        steps = 0
+
+        while n != 1 and steps < self.max_steps:
+            if n % 2 == 0:
+                n = n // 2
+            else:
+                n = 3 * n + 1
+            steps += 1
+
+        return steps if n == 1 else -1  # -1 indicates didn't converge
+
+    def generate_stopping_times(self):
+        """Generate stopping times for numbers 1 to max_n"""
+        print(f"Generating stopping times for numbers 1 to {self.max_n}...")
+
+        for n in range(1, self.max_n + 1):
+            st = self.collatz_stopping_time(n)
+            if st > 0:  # Ignore 0 and -1 (non-convergent)
+                self.stopping_times[n] = st
+                self.grouped_by_stopping_time[st].append(n)
+
+        print(f"Generated {len(self.stopping_times)} valid stopping times")
+        return self.stopping_times
+
+    def extract_number_features(self, n):
+        """Extract various features from a number for ML analysis"""
+        if n <= 0:
+            return {}
+
+        # Basic properties
+        binary_repr = bin(n)[2:]
+
+        features = {
+            'number': n,
+            'log_number': np.log(n),
+            'sqrt_number': np.sqrt(n),
+            'bit_length': len(binary_repr),
+            'ones_in_binary': binary_repr.count('1'),
+            'zeros_in_binary': binary_repr.count('0'),
+            'binary_density': binary_repr.count('1') / len(binary_repr),
+            'is_power_of_2': (n & (n-1)) == 0,
+            'trailing_zeros': len(binary_repr) - len(binary_repr.rstrip('0')) if binary_repr != '0' else 0,
+            'leading_ones': len(binary_repr) - len(binary_repr.lstrip('1')),
+        }
+
+        # Digit-based features
+        digits = [int(d) for d in str(n)]
+        features.update({
+            'digit_sum': sum(digits),
+            'digit_product': np.prod(digits) if 0 not in digits else 0,
+            'num_digits': len(digits),
+            'max_digit': max(digits),
+            'min_digit': min(digits),
+            'digit_variance': np.var(digits),
+        })
+
+        # Divisibility features
+        features.update({
+            'div_by_3': n % 3 == 0,
+            'div_by_5': n % 5 == 0,
+            'div_by_7': n % 7 == 0,
+            'div_by_11': n % 11 == 0,
+            'remainder_mod_8': n % 8,
+            'remainder_mod_16': n % 16,
+        })
+
+        # Prime-related features
+        features['is_prime'] = self.is_prime(n)
+        features['prime_factors_count'] = len(self.prime_factors(n))
+
+        # Collatz-specific features
+        if n % 2 == 0:
+            features['first_operation'] = 0  # Division by 2
+            features['log2_largest_power_of_2'] = (n & -n).bit_length() - 1
+        else:
+            features['first_operation'] = 1  # 3n+1
+            features['log2_largest_power_of_2'] = 0
+
+        return features
+
+    def is_prime(self, n):
+        """Check if number is prime"""
+        if n < 2:
+            return False
+        if n == 2:
+            return True
+        if n % 2 == 0:
+            return False
+        for i in range(3, int(np.sqrt(n)) + 1, 2):
+            if n % i == 0:
+                return False
+        return True
+
+    def prime_factors(self, n):
+        """Get prime factors of a number"""
+        factors = []
+        d = 2
+        while d * d <= n:
+            while n % d == 0:
+                factors.append(d)
+                n //= d
+            d += 1
+        if n > 1:
+            factors.append(n)
+        return factors
+
+    def create_features_dataframe(self):
+        """Create DataFrame with features for ML analysis"""
+        print("Creating features DataFrame...")
+
+        data = []
+        for n, st in self.stopping_times.items():
+            features = self.extract_number_features(n)
+            features['stopping_time'] = st
+            data.append(features)
+
+        self.features_df = pd.DataFrame(data)
+        print(f"Created DataFrame with {len(self.features_df)} rows and {len(self.features_df.columns)} columns")
+        return self.features_df
+
+    def markov_chain_analysis(self, base=2):
+        """Analyze Collatz sequence as Markov chain in different bases"""
+        print(f"Performing Markov chain analysis in base {base}...")
+
+        transition_counts = defaultdict(lambda: defaultdict(int))
+
+        for n in list(self.stopping_times.keys())[:1000]:  # Limit for computational efficiency
+            current = n
+            prev_remainder = current % base
+
+            steps = 0
+            while current != 1 and steps < 100:
+                if current % 2 == 0:
+                    current = current // 2
+                else:
+                    current = 3 * current + 1
+
+                current_remainder = current % base
+                transition_counts[prev_remainder][current_remainder] += 1
+                prev_remainder = current_remainder
+                steps += 1
+
+        # Create transition matrix
+        states = list(range(base))
+        transition_matrix = np.zeros((base, base))
+
+        for i, from_state in enumerate(states):
+            total_transitions = sum(transition_counts[from_state].values())
+            if total_transitions > 0:
+                for j, to_state in enumerate(states):
+                    transition_matrix[i][j] = transition_counts[from_state][to_state] / total_transitions
+
+        return transition_matrix, transition_counts
+
+    def train_ml_models(self):
+        """Train multiple ML models to predict stopping times"""
+        print("Training machine learning models...")
+
+        if self.features_df is None:
+            self.create_features_dataframe()
+
+        # Prepare features and target
+        feature_cols = [col for col in self.features_df.columns if col not in ['stopping_time', 'number']]
+        X = self.features_df[feature_cols]
+        y = self.features_df['stopping_time']
+
+        # Handle categorical variables
+        X = pd.get_dummies(X)
+
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Scale features
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        X_test_scaled = self.scaler.transform(X_test)
+
+        # Define models
+        models = {
+            'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42),
+            'Gradient Boosting': GradientBoostingRegressor(random_state=42),
+            'Linear Regression': LinearRegression(),
+            'Ridge Regression': Ridge(alpha=1.0),
+            'Lasso Regression': Lasso(alpha=1.0),
+            'SVR': SVR(kernel='rbf', C=1.0),
+            'Neural Network': MLPRegressor(hidden_layer_sizes=(100, 50), random_state=42, max_iter=500)
+        }
+
+        results = {}
+
+        for name, model in models.items():
+            print(f"Training {name}...")
+
+            # Use scaled data for models that benefit from it
+            if name in ['Linear Regression', 'Ridge Regression', 'Lasso Regression', 'SVR', 'Neural Network']:
+                model.fit(X_train_scaled, y_train)
+                y_pred = model.predict(X_test_scaled)
+            else:
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+
+            # Calculate metrics
+            mse = mean_squared_error(y_test, y_pred)
+            r2 = r2_score(y_test, y_pred)
+            mae = mean_absolute_error(y_test, y_pred)
+
+            results[name] = {
+                'model': model,
+                'mse': mse,
+                'r2': r2,
+                'mae': mae,
+                'predictions': y_pred
+            }
+
+            print(f"{name} - MSE: {mse:.4f}, R²: {r2:.4f}, MAE: {mae:.4f}")
+
+        self.models = results
+        return results
+
+    def analyze_stopping_time_patterns(self):
+        """Analyze patterns in stopping times distribution"""
+        print("Analyzing stopping time patterns...")
+
+        st_counts = Counter(self.stopping_times.values())
+
+        # Statistical analysis
+        stopping_times_array = np.array(list(self.stopping_times.values()))
+
+        patterns = {
+            'mean_stopping_time': np.mean(stopping_times_array),
+            'median_stopping_time': np.median(stopping_times_array),
+            'std_stopping_time': np.std(stopping_times_array),
+            'max_stopping_time': np.max(stopping_times_array),
+            'min_stopping_time': np.min(stopping_times_array),
+            'skewness': stats.skew(stopping_times_array),
+            'kurtosis': stats.kurtosis(stopping_times_array),
+            'unique_stopping_times': len(st_counts),
+            'most_common_stopping_times': st_counts.most_common(10)
+        }
+
+        # Frequency analysis
+        st_frequencies = list(st_counts.values())
+        patterns.update({
+            'mean_frequency': np.mean(st_frequencies),
+            'median_frequency': np.median(st_frequencies),
+            'frequency_distribution': dict(Counter(st_frequencies))
+        })
+
+        return patterns
+
+    def analyze_number_patterns_by_stopping_time(self):
+        """Analyze patterns within numbers having same stopping time"""
+        print("Analyzing patterns within numbers having same stopping time...")
+
+        patterns = {}
+
+        for st, numbers in self.grouped_by_stopping_time.items():
+            if len(numbers) < 3:  # Skip stopping times with too few numbers
+                continue
+
+            numbers_array = np.array(numbers)
+
+            # Basic statistics
+            number_patterns = {
+                'count': len(numbers),
+                'mean': np.mean(numbers_array),
+                'median': np.median(numbers_array),
+                'std': np.std(numbers_array),
+                'min': np.min(numbers_array),
+                'max': np.max(numbers_array),
+                'range': np.max(numbers_array) - np.min(numbers_array)
+            }
+
+            # Digit patterns
+            all_digits = ''.join([str(n) for n in numbers])
+            digit_freq = Counter(all_digits)
+            number_patterns['digit_frequencies'] = dict(digit_freq)
+
+            # Binary patterns
+            binary_lengths = [len(bin(n)[2:]) for n in numbers]
+            number_patterns['avg_binary_length'] = np.mean(binary_lengths)
+            number_patterns['binary_length_std'] = np.std(binary_lengths)
+
+            # Divisibility patterns
+            div_patterns = {}
+            for divisor in [2, 3, 4, 5, 6, 7, 8, 9, 10]:
+                div_count = sum(1 for n in numbers if n % divisor == 0)
+                div_patterns[f'divisible_by_{divisor}'] = div_count / len(numbers)
+
+            number_patterns['divisibility'] = div_patterns
+
+            patterns[st] = number_patterns
+
+        return patterns
+
+    def clustering_analysis(self):
+        """Perform clustering analysis on numbers based on features"""
+        print("Performing clustering analysis...")
+
+        if self.features_df is None:
+            self.create_features_dataframe()
+
+        # Prepare features for clustering
+        feature_cols = [col for col in self.features_df.columns
+                       if col not in ['stopping_time', 'number'] and
+                       self.features_df[col].dtype in ['int64', 'float64']]
+
+        X = self.features_df[feature_cols].fillna(0)
+        X_scaled = StandardScaler().fit_transform(X)
+
+        # K-means clustering
+        kmeans = KMeans(n_clusters=5, random_state=42)
+        clusters = kmeans.fit_predict(X_scaled)
+
+        # DBSCAN clustering
+        dbscan = DBSCAN(eps=0.5, min_samples=5)
+        dbscan_clusters = dbscan.fit_predict(X_scaled)
+
+        # Analyze clusters vs stopping times
+        cluster_analysis = {}
+
+        for cluster_id in np.unique(clusters):
+            mask = clusters == cluster_id
+            cluster_stopping_times = self.features_df[mask]['stopping_time']
+
+            cluster_analysis[f'kmeans_cluster_{cluster_id}'] = {
+                'size': np.sum(mask),
+                'avg_stopping_time': np.mean(cluster_stopping_times),
+                'std_stopping_time': np.std(cluster_stopping_times),
+                'stopping_time_range': [np.min(cluster_stopping_times), np.max(cluster_stopping_times)]
+            }
+
+        return cluster_analysis, clusters, dbscan_clusters
+
+    def comprehensive_analysis(self):
+        """Perform comprehensive analysis"""
+        print("Starting comprehensive Collatz analysis...")
+
+        # Generate data
+        self.generate_stopping_times()
+
+        # Create features
+        self.create_features_dataframe()
+
+        # Various analyses
+        results = {
+            'stopping_time_patterns': self.analyze_stopping_time_patterns(),
+            'number_patterns_by_st': self.analyze_number_patterns_by_stopping_time(),
+            'ml_results': self.train_ml_models(),
+            'markov_analysis': {},
+            'clustering_analysis': self.clustering_analysis()
+        }
+
+        # Markov analysis for different bases
+        for base in [2, 3, 4, 8, 16]:
+            transition_matrix, transition_counts = self.markov_chain_analysis(base)
+            results['markov_analysis'][f'base_{base}'] = {
+                'transition_matrix': transition_matrix,
+                'transition_counts': dict(transition_counts)
+            }
+
+        return results
+
+    def generate_visualizations(self, results):
+        """Generate comprehensive visualizations"""
+        print("Generating visualizations...")
+
+        fig = plt.figure(figsize=(20, 15))
+
+        # 1. Stopping time distribution
+        plt.subplot(3, 4, 1)
+        stopping_times_list = list(self.stopping_times.values())
+        plt.hist(stopping_times_list, bins=50, alpha=0.7, edgecolor='black')
+        plt.title('Distribution of Stopping Times')
+        plt.xlabel('Stopping Time')
+        plt.ylabel('Frequency')
+
+        # 2. Stopping time vs number (scatter plot)
+        plt.subplot(3, 4, 2)
+        numbers = list(self.stopping_times.keys())
+        stopping_times_list = list(self.stopping_times.values())
+        plt.scatter(numbers[:2000], stopping_times_list[:2000], alpha=0.5, s=1)
+        plt.title('Stopping Time vs Number')
+        plt.xlabel('Number')
+        plt.ylabel('Stopping Time')
+
+        # 3. Frequency of each stopping time
+        plt.subplot(3, 4, 3)
+        st_counts = Counter(self.stopping_times.values())
+        st_values, frequencies = zip(*sorted(st_counts.items()))
+        plt.bar(st_values[:30], frequencies[:30])
+        plt.title('Frequency of Each Stopping Time')
+        plt.xlabel('Stopping Time')
+        plt.ylabel('Count of Numbers')
+        plt.xticks(rotation=45)
+
+        # 4. Model performance comparison
+        plt.subplot(3, 4, 4)
+        if 'ml_results' in results:
+            model_names = list(results['ml_results'].keys())
+            r2_scores = [results['ml_results'][name]['r2'] for name in model_names]
+            plt.bar(range(len(model_names)), r2_scores)
+            plt.title('Model Performance (R² Score)')
+            plt.xlabel('Models')
+            plt.ylabel('R² Score')
+            plt.xticks(range(len(model_names)), model_names, rotation=45)
+
+        # 5. Bit length vs stopping time
+        if self.features_df is not None:
+            plt.subplot(3, 4, 5)
+            plt.scatter(self.features_df['bit_length'][:2000],
+                       self.features_df['stopping_time'][:2000], alpha=0.5)
+            plt.title('Bit Length vs Stopping Time')
+            plt.xlabel('Bit Length')
+            plt.ylabel('Stopping Time')
+
+        # 6. Binary density vs stopping time
+        if self.features_df is not None:
+            plt.subplot(3, 4, 6)
+            plt.scatter(self.features_df['binary_density'][:2000],
+                       self.features_df['stopping_time'][:2000], alpha=0.5)
+            plt.title('Binary Density vs Stopping Time')
+            plt.xlabel('Binary Density')
+            plt.ylabel('Stopping Time')
+
+        # 7. Distribution of numbers by stopping time (for common STs)
+        plt.subplot(3, 4, 7)
+        common_sts = [st for st, count in Counter(self.stopping_times.values()).most_common(5)]
+        for st in common_sts[:3]:
+            numbers_with_st = self.grouped_by_stopping_time[st]
+            if len(numbers_with_st) > 10:
+                plt.hist(numbers_with_st, bins=20, alpha=0.5, label=f'ST={st}')
+        plt.title('Number Distribution by Stopping Time')
+        plt.xlabel('Number Value')
+        plt.ylabel('Count')
+        plt.legend()
+
+        # 8. Markov transition matrix heatmap (base 2)
+        plt.subplot(3, 4, 8)
+        if 'markov_analysis' in results and 'base_2' in results['markov_analysis']:
+            trans_matrix = results['markov_analysis']['base_2']['transition_matrix']
+            sns.heatmap(trans_matrix, annot=True, cmap='viridis', square=True)
+            plt.title('Markov Transitions (Base 2)')
+
+        # 9-12. Additional analyses
+        if len(results.get('clustering_analysis', [])) > 0:
+            cluster_analysis, clusters, _ = results['clustering_analysis']
+
+            plt.subplot(3, 4, 9)
+            cluster_sizes = [cluster_analysis[f'kmeans_cluster_{i}']['size']
+                            for i in range(5) if f'kmeans_cluster_{i}' in cluster_analysis]
+            plt.pie(cluster_sizes, labels=[f'Cluster {i}' for i in range(len(cluster_sizes))], autopct='%1.1f%%')
+            plt.title('Cluster Size Distribution')
+
+        plt.tight_layout()
+        plt.show()
+
+    def print_research_insights(self, results):
+        """Print key insights and patterns discovered"""
+        print("\n" + "="*80)
+        print("COMPREHENSIVE COLLATZ CONJECTURE ANALYSIS RESULTS")
+        print("="*80)
+
+        # Basic statistics
+        if 'stopping_time_patterns' in results:
+            patterns = results['stopping_time_patterns']
+            print(f"\n📊 STOPPING TIME STATISTICS:")
+            print(f"   Mean stopping time: {patterns['mean_stopping_time']:.2f}")
+            print(f"   Median stopping time: {patterns['median_stopping_time']:.2f}")
+            print(f"   Standard deviation: {patterns['std_stopping_time']:.2f}")
+            print(f"   Range: {patterns['min_stopping_time']} - {patterns['max_stopping_time']}")
+            print(f"   Skewness: {patterns['skewness']:.3f}")
+            print(f"   Most common stopping times: {patterns['most_common_stopping_times'][:5]}")
+
+        # ML Model Performance
+        if 'ml_results' in results:
+            print(f"\n🤖 MACHINE LEARNING RESULTS:")
+            best_model = max(results['ml_results'].items(), key=lambda x: x[1]['r2'])
+            print(f"   Best performing model: {best_model[0]} (R² = {best_model[1]['r2']:.4f})")
+
+            print("   All model performances:")
+            for name, metrics in results['ml_results'].items():
+                print(f"   {name:20}: R² = {metrics['r2']:.4f}, MAE = {metrics['mae']:.2f}")
+
+        # Pattern insights
+        if 'number_patterns_by_st' in results:
+            print(f"\n🔍 PATTERNS BY STOPPING TIME:")
+            st_patterns = results['number_patterns_by_st']
+
+            # Find stopping times with most numbers
+            largest_groups = sorted([(st, data['count']) for st, data in st_patterns.items()],
+                                  key=lambda x: x[1], reverse=True)[:5]
+
+            print("   Stopping times with most numbers:")
+            for st, count in largest_groups:
+                avg_num = st_patterns[st]['mean']
+                print(f"   ST {st}: {count} numbers (avg value: {avg_num:.0f})")
+
+        # Clustering insights
+        if len(results.get('clustering_analysis', [])) > 0:
+            cluster_analysis, _, _ = results['clustering_analysis']
+            print(f"\n🎯 CLUSTERING ANALYSIS:")
+            for cluster_name, data in cluster_analysis.items():
+                if 'kmeans' in cluster_name:
+                    print(f"   {cluster_name}: {data['size']} numbers, "
+                          f"avg ST = {data['avg_stopping_time']:.2f}")
+
+        print(f"\n💡 RESEARCH TIPS FOR BETTER ACCURACY:")
+        print("="*50)
+
+        tips = [
+            "1. FEATURE ENGINEERING:",
+            "   • Include more number-theoretic properties (totient function, divisor count)",
+            "   • Add sequence-based features (max value reached, number of odd steps)",
+            "   • Consider modular arithmetic patterns (remainders mod various primes)",
+            "",
+            "2. ADVANCED ML TECHNIQUES:",
+            "   • Try ensemble methods combining multiple algorithms",
+            "   • Use feature selection to identify most predictive features",
+            "   • Implement deep learning with careful regularization",
+            "   • Consider time-series approaches for sequence analysis",
+            "",
+            "3. MATHEMATICAL APPROACHES:",
+            "   • Analyze 3x+1 trees and backward iteration",
+            "   • Study distribution in different number bases",
+            "   • Investigate connection to continued fractions",
+            "   • Apply ergodic theory and dynamical systems",
+            "",
+            "4. DATA ENHANCEMENT:",
+            "   • Extend range beyond 10,000 numbers",
+            "   • Include trajectory features (path analysis)",
+            "   • Study correlation with prime gaps and density",
+            "   • Analyze periodic patterns in binary representations",
+            "",
+            "5. VALIDATION STRATEGIES:",
+            "   • Cross-validate across different number ranges",
+            "   • Test predictions on much larger numbers",
+            "   • Verify patterns hold across different computational methods",
+            "   • Compare results with known theoretical bounds"
+        ]
+
+        for tip in tips:
+            print(tip)
+
+        return results
+
+
+# Function call statements for comprehensive analysis
+def run_collatz_analysis(max_n=10000):
+    """
+    Main function to run comprehensive Collatz conjecture analysis
+
+    Args:
+        max_n (int): Maximum number to analyze (default: 10000)
+
+    Returns:
+        dict: Comprehensive analysis results
+    """
+    print("🚀 Starting Comprehensive Collatz Conjecture Analysis")
+    print(f"Analyzing numbers from 1 to {max_n}")
+
+    # Initialize analyzer
+    analyzer = CollatzAnalyzer(max_n=max_n)
+
+    # Run comprehensive analysis
+    results = analyzer.comprehensive_analysis()
+
+    # Generate visualizations
+    analyzer.generate_visualizations(results)
+
+    # Print insights and recommendations
+    analyzer.print_research_insights(results)
+
+    return analyzer, results
+
+# Example usage and function calls:
+if __name__ == "__main__":
+    # Basic analysis
+    analyzer, results = run_collatz_analysis(max_n=5000)  # Start with smaller range for testing
+
+    # Extended analysis with larger range
+    # analyzer_large, results_large = run_collatz_analysis(max_n=50000)
+
+    # Access specific results:
+    # print("Feature importance from Random Forest:")
+    # if 'Random Forest' in results['ml_results']:
+    #     rf_model = results['ml_results']['Random Forest']['model']
+    #     feature_names = analyzer.features_df.columns[:-2]  # Exclude 'stopping_time' and 'number'
+    #     importances = rf_model.feature_importances_
+    #     for name, importance in zip(feature_names, importances):
+    #         if importance > 0.01:  # Only show important features
+    #             print(f"{name}: {importance:.4f}")
+
+    # # Individual analyses can also be run separately:
+    # analyzer.generate_stopping_times()
+    # analyzer.create_features_dataframe()
+    # ml_results = analyzer.train_ml_models()
+    # patterns = analyzer.analyze_stopping_time_patterns()
+    # number_patterns = analyzer.analyze_number_patterns_by_stopping_time()
+    # markov_results = analyzer.markov_chain_analysis(base=2)
+    # clustering_results = analyzer.clustering_analysis()
+
+    print("\n✅ Analysis complete! Check the visualizations and results above.")

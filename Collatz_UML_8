@@ -1,0 +1,187 @@
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+# --- Collatz Steps Calculation ---
+def collatz_steps(n):
+    steps = 0
+    while n != 1:
+        if n % 2 == 0:
+            n //= 2
+        else:
+            n = 3*n + 1
+        steps += 1
+    return steps
+
+# --- Feature Engineering ---
+def base2_repr(n, max_bits=20):
+    # Returns a fixed-size binary array representation of n
+    bits = np.array(list(np.binary_repr(n, width=max_bits))).astype(int)
+    return bits
+
+def collatz_features(n, max_bits=20):
+    features = [
+        n,
+        np.log(n),
+        n % 2,
+        n % 3,
+        bin(n).count("1"),  # number of 1s in binary
+        bin(n).count("0"),  # number of 0s in binary
+    ]
+    # Add base-2 representation
+    features.extend(base2_repr(n, max_bits))
+    return np.array(features, dtype=float)
+
+# --- Dataset Generation ---
+max_n = 1000000
+max_bits = len(bin(max_n)) - 2
+X = np.arange(2, max_n)
+y = np.array([collatz_steps(n) for n in X])
+X_features = np.vstack([collatz_features(n, max_bits) for n in X])
+
+# --- Analytical Model: Scaling Law ---
+def analytical_bound(n):
+    # Empirical scaling law: steps ≈ C * log(n)
+    C = 19 / 6
+    return C * np.log(n)
+
+analytical_preds = analytical_bound(X)
+
+# --- Markov Chain Model (Probabilistic) ---
+def markov_chain_collatz(n, trials=1000):
+    # Simulate many runs to get expected steps
+    # At each step, randomly pick parity (simulate probabilistic transitions)
+    steps = []
+    for _ in range(trials):
+        k = n
+        count = 0
+        while k != 1:
+            if k % 2 == 0:
+                k //= 2
+            else:
+                # Instead of deterministic, probabilistically choose next step
+                # Simulate random "odd" step
+                k = 3*k + 1
+            count += 1
+        steps.append(count)
+    return np.mean(steps)
+# For speed, apply MC only to a subsample
+mc_sample_idx = np.random.choice(len(X), size=500, replace=False)
+mc_preds = np.array([markov_chain_collatz(x, trials=100) for x in X[mc_sample_idx]])
+
+# --- ML Models ---
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X_features, y, test_size=0.2, random_state=42)
+
+# Random Forest
+rf = RandomForestRegressor(n_estimators=100, max_depth=15)
+rf.fit(X_train, y_train)
+rf_pred = rf.predict(X_test)
+
+# Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+lr_pred = lr.predict(X_test)
+
+# --- Deep Learning Model ---
+class CollatzNet(nn.Module):
+    def __init__(self, input_dim):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
+        )
+    def forward(self, x):
+        return self.net(x)
+
+# Prepare torch tensors
+X_train_torch = torch.tensor(X_train, dtype=torch.float32)
+y_train_torch = torch.tensor(y_train, dtype=torch.float32).view(-1,1)
+X_test_torch = torch.tensor(X_test, dtype=torch.float32)
+y_test_torch = torch.tensor(y_test, dtype=torch.float32).view(-1,1)
+
+dl_model = CollatzNet(X_train.shape[1])
+optimizer = optim.Adam(dl_model.parameters(), lr=0.001)
+loss_fn = nn.MSELoss()
+
+for epoch in range(25):
+    dl_model.train()
+    optimizer.zero_grad()
+    pred = dl_model(X_train_torch)
+    loss = loss_fn(pred, y_train_torch)
+    loss.backward()
+    optimizer.step()
+    if epoch % 5 == 0:
+        print(f"Epoch {epoch} Loss: {loss.item():.4f}")
+
+dl_model.eval()
+with torch.no_grad():
+    dl_pred = dl_model(X_test_torch).view(-1).numpy()
+
+# --- Statistical Analysis ---
+def analyze(pred, true, name=""):
+    mae = mean_absolute_error(true, pred)
+    mse = mean_squared_error(true, pred)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(true, pred)
+    corr, _ = pearsonr(true, pred)
+    print(f"\n{name} Model Accuracy:")
+    print(f"MAE: {mae:.4f}, RMSE: {rmse:.4f}, R2: {r2:.4f}, Pearson Corr: {corr:.4f}")
+    return mae, mse, rmse, r2, corr
+
+print("\n--- Statistical Analysis ---")
+# Analytical bound
+analytical_test = analytical_bound(X_test[:,0])
+analyze(analytical_test, y_test, "Analytical (O(log n))")
+
+# Linear Regression
+analyze(lr_pred, y_test, "Linear Regression")
+
+# Random Forest
+analyze(rf_pred, y_test, "Random Forest")
+
+# Deep Learning Model
+analyze(dl_pred, y_test, "Deep Learning")
+
+# Markov chain (on subsample)
+print("\nMarkov Chain Monte Carlo sample:")
+mc_true = y[mc_sample_idx]
+analyze(mc_preds, mc_true, "Markov Chain MC")
+
+# --- Visualization ---
+plt.figure(figsize=(12,6))
+plt.scatter(X_test[:,0], y_test, label="True", alpha=0.2, s=10)
+plt.scatter(X_test[:,0], rf_pred, label="RF Pred", alpha=0.2, s=10)
+plt.scatter(X_test[:,0], dl_pred, label="DL Pred", alpha=0.2, s=10)
+plt.scatter(X_test[:,0], analytical_test, label="Analytical Bound", alpha=0.2, s=10)
+plt.xlabel("n")
+plt.ylabel("Collatz Steps")
+plt.legend()
+plt.title("Collatz Steps: True vs Predicted (Test Set)")
+plt.show()
+
+# Parameter distributions
+plt.figure(figsize=(8,4))
+plt.hist(y, bins=50, alpha=0.6)
+plt.xlabel("Collatz Steps")
+plt.ylabel("Frequency")
+plt.title("Distribution of Collatz Stopping Times")
+plt.show()
+
+plt.figure(figsize=(8,4))
+plt.hist(rf_pred-y_test, bins=50, alpha=0.6, label="RF Error")
+plt.hist(dl_pred-y_test, bins=50, alpha=0.6, label="DL Error")
+plt.xlabel("Prediction Error")
+plt.ylabel("Frequency")
+plt.title("Prediction Error Distribution")
+plt.legend()
+plt.show()

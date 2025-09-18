@@ -1,0 +1,653 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import defaultdict, Counter
+import random
+import pandas as pd
+from typing import Dict, List, Tuple, Optional
+from dataclasses import dataclass
+import logging
+from scipy import stats
+import seaborn as sns
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import warnings
+warnings.filterwarnings('ignore')
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class CollatzResult:
+    """Results from a Collatz sequence computation"""
+    number: int
+    actual_steps: int
+    max_value: int
+    trajectory_length: int
+    converged: bool
+
+@dataclass
+class PredictionResult:
+    """Results from a prediction"""
+    number: int
+    actual_steps: int
+    predicted_steps: int
+    error: int
+    relative_error: float
+    method: str
+
+class CollatzComputer:
+    """Core Collatz sequence computation"""
+
+    @staticmethod
+    def collatz_steps(n: int, max_iterations: int = 100000) -> CollatzResult:
+        """Compute Collatz sequence and return detailed results"""
+        original_n = n
+        steps = 0
+        max_val = n
+        trajectory = [n]
+
+        while n != 1 and steps < max_iterations:
+            if n % 2 == 0:
+                n = n // 2
+            else:
+                n = 3 * n + 1
+
+            trajectory.append(n)
+            max_val = max(max_val, n)
+            steps += 1
+
+        return CollatzResult(
+            number=original_n,
+            actual_steps=steps,
+            max_value=max_val,
+            trajectory_length=len(trajectory),
+            converged=(n == 1)
+        )
+
+class BasicMarkovChain:
+    """Basic Markov chain for step prediction"""
+
+    def __init__(self, name: str = "Basic"):
+        self.name = name
+        self.transition_counts = defaultdict(lambda: defaultdict(int))
+        self.state_step_stats = defaultdict(list)
+        self.trained = False
+
+    def train(self, training_data: List[int], max_train: int = 2000):
+        """Train the Markov chain on sample data"""
+        logger.info(f"Training {self.name} Markov Chain...")
+
+        training_sample = random.sample(training_data, min(len(training_data), max_train))
+
+        for n in training_sample:
+            result = CollatzComputer.collatz_steps(n)
+            if result.converged:
+                # Record state transitions and steps
+                trajectory = self._get_trajectory(n)
+                for i, state in enumerate(trajectory[:-1]):
+                    remaining_steps = len(trajectory) - i - 1
+                    self.state_step_stats[state].append(remaining_steps)
+
+                    if i + 1 < len(trajectory):
+                        next_state = trajectory[i + 1]
+                        self.transition_counts[state][next_state] += 1
+
+        self.trained = True
+        logger.info(f"{self.name} training completed with {len(self.state_step_stats)} states")
+
+    def _get_trajectory(self, n: int) -> List[int]:
+        """Get trajectory for training - to be overridden by subclasses"""
+        trajectory = []
+        while n != 1:
+            trajectory.append(self._get_state(n))
+            n = n // 2 if n % 2 == 0 else 3 * n + 1
+        trajectory.append(1)
+        return trajectory
+
+    def _get_state(self, n: int) -> int:
+        """Get state representation - to be overridden by subclasses"""
+        return n % 100  # Basic: mod 100 to limit state space
+
+    def predict_steps(self, n: int) -> int:
+        """Predict number of steps using Markov chain"""
+        if not self.trained:
+            return -1
+
+        state = self._get_state(n)
+        if state in self.state_step_stats and self.state_step_stats[state]:
+            # Use median of observed steps from this state
+            return int(np.median(self.state_step_stats[state]))
+        else:
+            # Fallback: use average steps from similar states
+            similar_states = [s for s in self.state_step_stats.keys()
+                            if abs(s - state) <= 10 and self.state_step_stats[s]]
+            if similar_states:
+                all_steps = []
+                for s in similar_states:
+                    all_steps.extend(self.state_step_stats[s])
+                return int(np.median(all_steps))
+            else:
+                return int(np.log2(max(1, n)) * 3)  # Rough heuristic
+
+class ModularMarkovChain(BasicMarkovChain):
+    """Markov chain based on modular arithmetic"""
+
+    def __init__(self, modulus: int = 16, name: str = None):
+        self.modulus = modulus
+        super().__init__(name or f"Modular-{modulus}")
+
+    def _get_state(self, n: int) -> int:
+        return n % self.modulus
+
+class BinaryMarkovChain(BasicMarkovChain):
+    """Markov chain based on binary representation patterns"""
+
+    def __init__(self, name: str = "Binary"):
+        super().__init__(name)
+
+    def _get_state(self, n: int) -> int:
+        # State based on last few binary digits and parity patterns
+        binary = bin(n)[2:]
+        if len(binary) >= 4:
+            return int(binary[-4:], 2)  # Last 4 bits
+        else:
+            return int(binary, 2)
+
+class MagnitudeMarkovChain(BasicMarkovChain):
+    """Markov chain based on number magnitude"""
+
+    def __init__(self, name: str = "Magnitude"):
+        super().__init__(name)
+
+    def _get_state(self, n: int) -> int:
+        # State based on magnitude (log scale)
+        if n <= 1:
+            return 0
+        return min(20, int(np.log10(max(1, n))) * 3 + (n % 3))  # Combine magnitude with small modular info
+
+class AdaptiveMarkovChain(BasicMarkovChain):
+    """Adaptive Markov chain that learns from errors"""
+
+    def __init__(self, name: str = "Adaptive"):
+        super().__init__(name)
+        self.error_adjustments = defaultdict(float)
+        self.prediction_history = []
+
+    def update_from_error(self, prediction_result: PredictionResult):
+        """Update chain based on prediction errors"""
+        state = self._get_state(prediction_result.number)
+        error = prediction_result.error
+
+        # Exponentially weighted moving average of errors
+        alpha = 0.1
+        self.error_adjustments[state] = (alpha * error +
+                                       (1 - alpha) * self.error_adjustments[state])
+
+    def predict_steps(self, n: int) -> int:
+        base_prediction = super().predict_steps(n)
+        state = self._get_state(n)
+        adjustment = self.error_adjustments.get(state, 0)
+
+        return max(1, int(base_prediction + adjustment))
+
+class HybridMarkovChain(BasicMarkovChain):
+    """Hybrid chain combining multiple state representations"""
+
+    def __init__(self, name: str = "Hybrid"):
+        super().__init__(name)
+
+    def _get_state(self, n: int) -> Tuple[int, int, int]:
+        # Combine modular, magnitude, and binary features
+        mod_state = n % 8
+        mag_state = min(10, int(np.log10(max(1, n))))
+        bin_state = bin(n).count('1') % 4  # Hamming weight mod 4
+        return (mod_state, mag_state, bin_state)
+
+    def _get_trajectory(self, n: int) -> List[Tuple[int, int, int]]:
+        trajectory = []
+        while n != 1:
+            trajectory.append(self._get_state(n))
+            n = n // 2 if n % 2 == 0 else 3 * n + 1
+        trajectory.append(self._get_state(1))
+        return trajectory
+
+class CollatzTrajectoryTester:
+    """Main tester class coordinating all Markov chains"""
+
+    def __init__(self, test_range: Tuple[int, int] = (1, 10000), num_tests: int = 1000):
+        self.test_range = test_range
+        self.num_tests = num_tests
+        self.chains = []
+        self.results = []
+        self.error_analysis = {}
+
+        # Initialize different types of Markov chains
+        self._initialize_chains()
+
+    def _initialize_chains(self):
+        """Initialize all types of Markov chains"""
+        self.chains = [
+            BasicMarkovChain("Basic-100"),
+            ModularMarkovChain(8, "Mod-8"),
+            ModularMarkovChain(16, "Mod-16"),
+            ModularMarkovChain(32, "Mod-32"),
+            BinaryMarkovChain("Binary"),
+            MagnitudeMarkovChain("Magnitude"),
+            AdaptiveMarkovChain("Adaptive"),
+            HybridMarkovChain("Hybrid")
+        ]
+
+    def train_all_chains(self, training_size: int = 3000):
+        """Train all Markov chains"""
+        logger.info("Generating training data...")
+        training_data = random.sample(range(self.test_range[0], self.test_range[1]),
+                                    min(training_size, self.test_range[1] - self.test_range[0]))
+
+        for chain in self.chains:
+            chain.train(training_data)
+
+    def run_comprehensive_test(self):
+        """Run comprehensive testing on all chains"""
+        logger.info(f"Running comprehensive test with {self.num_tests} random numbers...")
+
+        # Generate test numbers
+        test_numbers = [random.randint(self.test_range[0], self.test_range[1])
+                       for _ in range(self.num_tests)]
+
+        # Test each chain
+        all_results = defaultdict(list)
+
+        for i, test_num in enumerate(test_numbers):
+            if i % 100 == 0:
+                logger.info(f"Testing number {i+1}/{self.num_tests}: {test_num}")
+
+            # Get ground truth
+            actual_result = CollatzComputer.collatz_steps(test_num)
+            if not actual_result.converged:
+                continue  # Skip non-convergent cases
+
+            # Test each chain
+            for chain in self.chains:
+                predicted_steps = chain.predict_steps(test_num)
+                error = abs(predicted_steps - actual_result.actual_steps)
+                relative_error = error / max(1, actual_result.actual_steps)
+
+                result = PredictionResult(
+                    number=test_num,
+                    actual_steps=actual_result.actual_steps,
+                    predicted_steps=predicted_steps,
+                    error=error,
+                    relative_error=relative_error,
+                    method=chain.name
+                )
+
+                all_results[chain.name].append(result)
+
+                # Update adaptive chain
+                if isinstance(chain, AdaptiveMarkovChain):
+                    chain.update_from_error(result)
+
+        self.results = all_results
+        return all_results
+
+    def analyze_accuracy(self):
+        """Analyze accuracy of each Markov chain"""
+        if not self.results:
+            logger.error("No results to analyze. Run tests first.")
+            return
+
+        accuracy_stats = {}
+
+        print("\n" + "="*80)
+        print("MARKOV CHAIN ACCURACY ANALYSIS")
+        print("="*80)
+
+        for chain_name, results in self.results.items():
+            if not results:
+                continue
+
+            errors = [r.error for r in results]
+            relative_errors = [r.relative_error for r in results]
+            actual_steps = [r.actual_steps for r in results]
+            predicted_steps = [r.predicted_steps for r in results]
+
+            # Calculate statistics
+            mae = np.mean(errors)
+            rmse = np.sqrt(np.mean([e**2 for e in errors]))
+            mape = np.mean(relative_errors) * 100
+            median_error = np.median(errors)
+            max_error = np.max(errors)
+
+            # Accuracy metrics
+            within_1_step = sum(1 for e in errors if e <= 1) / len(errors) * 100
+            within_5_steps = sum(1 for e in errors if e <= 5) / len(errors) * 100
+            within_10_steps = sum(1 for e in errors if e <= 10) / len(errors) * 100
+
+            accuracy_stats[chain_name] = {
+                'MAE': mae,
+                'RMSE': rmse,
+                'MAPE': mape,
+                'Median_Error': median_error,
+                'Max_Error': max_error,
+                'Within_1_Step': within_1_step,
+                'Within_5_Steps': within_5_steps,
+                'Within_10_Steps': within_10_steps,
+                'Total_Tests': len(results)
+            }
+
+            print(f"\n{chain_name}:")
+            print(f"  Mean Absolute Error: {mae:.2f}")
+            print(f"  Root Mean Square Error: {rmse:.2f}")
+            print(f"  Mean Absolute Percentage Error: {mape:.1f}%")
+            print(f"  Median Error: {median_error:.2f}")
+            print(f"  Maximum Error: {max_error}")
+            print(f"  Within 1 step: {within_1_step:.1f}%")
+            print(f"  Within 5 steps: {within_5_steps:.1f}%")
+            print(f"  Within 10 steps: {within_10_steps:.1f}%")
+
+        return accuracy_stats
+
+    def analyze_error_correlations(self):
+        """Analyze correlations between errors and various factors"""
+        logger.info("Analyzing error correlations...")
+
+        self.error_analysis = {}
+
+        for chain_name, results in self.results.items():
+            if not results:
+                continue
+
+            # Collect data for correlation analysis
+            data = {
+                'number': [r.number for r in results],
+                'actual_steps': [r.actual_steps for r in results],
+                'predicted_steps': [r.predicted_steps for r in results],
+                'error': [r.error for r in results],
+                'relative_error': [r.relative_error for r in results]
+            }
+
+            # Add derived features
+            data['log_number'] = [np.log10(max(1, n)) for n in data['number']]
+            data['number_length'] = [len(str(n)) for n in data['number']]
+            data['is_power_of_2'] = [n & (n-1) == 0 for n in data['number']]
+            data['hamming_weight'] = [bin(n).count('1') for n in data['number']]
+            data['mod_8'] = [n % 8 for n in data['number']]
+
+            df = pd.DataFrame(data)
+
+            # Calculate correlations
+            numeric_cols = ['log_number', 'number_length', 'hamming_weight',
+                          'mod_8', 'actual_steps']
+            correlations = {}
+
+            for col in numeric_cols:
+                corr_coef, p_value = stats.pearsonr(df[col], df['error'])
+                correlations[col] = {'correlation': corr_coef, 'p_value': p_value}
+
+            self.error_analysis[chain_name] = {
+                'correlations': correlations,
+                'dataframe': df
+            }
+
+            print(f"\n{chain_name} - Error Correlations:")
+            for factor, stats_data in correlations.items():
+                corr = stats_data['correlation']
+                p_val = stats_data['p_value']
+                significance = "***" if p_val < 0.001 else "**" if p_val < 0.01 else "*" if p_val < 0.05 else ""
+                print(f"  {factor}: {corr:.3f} {significance}")
+
+    def identify_problematic_cases(self, error_threshold: int = 20):
+        """Identify and analyze problematic predictions"""
+        print(f"\n" + "="*80)
+        print(f"PROBLEMATIC CASES ANALYSIS (Error > {error_threshold})")
+        print("="*80)
+
+        for chain_name, results in self.results.items():
+            problematic = [r for r in results if r.error > error_threshold]
+
+            if problematic:
+                print(f"\n{chain_name}: {len(problematic)} problematic cases")
+
+                # Analyze patterns in problematic cases
+                numbers = [r.number for r in problematic]
+                errors = [r.error for r in problematic]
+
+                print(f"  Average problematic number: {np.mean(numbers):.0f}")
+                print(f"  Average error: {np.mean(errors):.1f}")
+                print(f"  Number range: {min(numbers)} - {max(numbers)}")
+
+                # Show worst cases
+                worst_cases = sorted(problematic, key=lambda x: x.error, reverse=True)[:3]
+                print("  Worst cases:")
+                for case in worst_cases:
+                    print(f"    n={case.number}: predicted={case.predicted_steps}, "
+                          f"actual={case.actual_steps}, error={case.error}")
+
+    def improve_chains_based_on_analysis(self):
+        """Implement improvements based on error analysis"""
+        logger.info("Implementing improvements based on error analysis...")
+
+        improvements = {}
+
+        for chain_name, analysis in self.error_analysis.items():
+            correlations = analysis['correlations']
+            improvements[chain_name] = []
+
+            # Identify strong correlations
+            strong_correlations = {k: v for k, v in correlations.items()
+                                 if abs(v['correlation']) > 0.3 and v['p_value'] < 0.05}
+
+            if strong_correlations:
+                improvements[chain_name].extend([
+                    f"Strong correlation with {factor} (r={corr['correlation']:.3f})"
+                    for factor, corr in strong_correlations.items()
+                ])
+
+        # Print improvement suggestions
+        print(f"\n" + "="*80)
+        print("IMPROVEMENT SUGGESTIONS")
+        print("="*80)
+
+        for chain_name, suggestions in improvements.items():
+            if suggestions:
+                print(f"\n{chain_name}:")
+                for suggestion in suggestions:
+                    print(f"  • {suggestion}")
+
+        return improvements
+
+    def create_visualizations(self):
+        """Create comprehensive visualizations"""
+        if not self.results:
+            return
+
+        # Set up the plotting style
+        plt.style.use('default')
+        fig = plt.figure(figsize=(16, 12))
+
+        # 1. Accuracy comparison
+        ax1 = plt.subplot(2, 3, 1)
+        chain_names = list(self.results.keys())
+        within_5_accuracy = []
+
+        for chain_name in chain_names:
+            results = self.results[chain_name]
+            if results:
+                within_5 = sum(1 for r in results if r.error <= 5) / len(results) * 100
+                within_5_accuracy.append(within_5)
+            else:
+                within_5_accuracy.append(0)
+
+        bars = ax1.bar(range(len(chain_names)), within_5_accuracy,
+                      color=plt.cm.Set3(np.linspace(0, 1, len(chain_names))))
+        ax1.set_xlabel('Markov Chain Type')
+        ax1.set_ylabel('Accuracy (Within 5 Steps) %')
+        ax1.set_title('Accuracy Comparison')
+        ax1.set_xticks(range(len(chain_names)))
+        ax1.set_xticklabels(chain_names, rotation=45, ha='right')
+
+        # Add value labels on bars
+        for bar, acc in zip(bars, within_5_accuracy):
+            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+                    f'{acc:.1f}%', ha='center', va='bottom')
+
+        # 2. Error distribution for best performing chain
+        ax2 = plt.subplot(2, 3, 2)
+        best_chain = max(self.results.keys(),
+                        key=lambda x: sum(1 for r in self.results[x] if r.error <= 5))
+        best_errors = [r.error for r in self.results[best_chain]]
+
+        ax2.hist(best_errors, bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+        ax2.set_xlabel('Prediction Error (Steps)')
+        ax2.set_ylabel('Frequency')
+        ax2.set_title(f'Error Distribution - {best_chain}')
+        ax2.axvline(np.median(best_errors), color='red', linestyle='--',
+                   label=f'Median: {np.median(best_errors):.1f}')
+        ax2.legend()
+
+        # 3. Actual vs Predicted scatter plot
+        ax3 = plt.subplot(2, 3, 3)
+        actual = [r.actual_steps for r in self.results[best_chain]]
+        predicted = [r.predicted_steps for r in self.results[best_chain]]
+
+        ax3.scatter(actual, predicted, alpha=0.5, color='green', s=20)
+        max_steps = max(max(actual), max(predicted))
+        ax3.plot([0, max_steps], [0, max_steps], 'r--', label='Perfect Prediction')
+        ax3.set_xlabel('Actual Steps')
+        ax3.set_ylabel('Predicted Steps')
+        ax3.set_title(f'Actual vs Predicted - {best_chain}')
+        ax3.legend()
+
+        # 4. Error vs Number magnitude
+        ax4 = plt.subplot(2, 3, 4)
+        numbers = [r.number for r in self.results[best_chain]]
+        errors = [r.error for r in self.results[best_chain]]
+        log_numbers = [np.log10(n) for n in numbers]
+
+        ax4.scatter(log_numbers, errors, alpha=0.5, color='orange', s=20)
+        ax4.set_xlabel('Log10(Number)')
+        ax4.set_ylabel('Prediction Error')
+        ax4.set_title('Error vs Number Magnitude')
+
+        # 5. Correlation heatmap for best chain
+        ax5 = plt.subplot(2, 3, 5)
+        if best_chain in self.error_analysis:
+            corr_data = self.error_analysis[best_chain]['correlations']
+            factors = list(corr_data.keys())
+            correlations = [corr_data[f]['correlation'] for f in factors]
+
+            colors = ['red' if abs(c) > 0.3 else 'orange' if abs(c) > 0.2 else 'lightblue'
+                     for c in correlations]
+            bars = ax5.barh(factors, correlations, color=colors)
+            ax5.set_xlabel('Correlation with Error')
+            ax5.set_title(f'Error Correlations - {best_chain}')
+            ax5.axvline(0, color='black', linestyle='-', linewidth=0.5)
+
+            # Add correlation values on bars
+            for bar, corr in zip(bars, correlations):
+                ax5.text(bar.get_width() + (0.01 if corr >= 0 else -0.01),
+                        bar.get_y() + bar.get_height()/2,
+                        f'{corr:.2f}', ha='left' if corr >= 0 else 'right', va='center')
+
+        # 6. Performance evolution (for adaptive chain if available)
+        ax6 = plt.subplot(2, 3, 6)
+        if 'Adaptive' in self.results:
+            adaptive_results = self.results['Adaptive']
+            # Calculate rolling average of errors
+            window_size = 50
+            errors = [r.error for r in adaptive_results]
+            rolling_errors = []
+
+            for i in range(len(errors)):
+                start = max(0, i - window_size + 1)
+                rolling_errors.append(np.mean(errors[start:i+1]))
+
+            ax6.plot(rolling_errors, color='purple', linewidth=2)
+            ax6.set_xlabel('Test Number')
+            ax6.set_ylabel('Rolling Average Error')
+            ax6.set_title('Adaptive Chain Learning Curve')
+            ax6.grid(True, alpha=0.3)
+        else:
+            ax6.text(0.5, 0.5, 'Adaptive Chain\nNot Available',
+                    ha='center', va='center', transform=ax6.transAxes,
+                    fontsize=12, style='italic')
+            ax6.set_xlim(0, 1)
+            ax6.set_ylim(0, 1)
+
+        plt.tight_layout()
+        plt.show()
+
+    def generate_final_report(self):
+        """Generate comprehensive final report"""
+        print("\n" + "="*100)
+        print("COMPREHENSIVE MARKOV CHAIN COLLATZ TRAJECTORY TESTER REPORT")
+        print("="*100)
+
+        # Find best performing chain
+        best_chain_name = None
+        best_accuracy = 0
+
+        for chain_name, results in self.results.items():
+            if results:
+                accuracy = sum(1 for r in results if r.error <= 5) / len(results) * 100
+                if accuracy > best_accuracy:
+                    best_accuracy = accuracy
+                    best_chain_name = chain_name
+
+        print(f"\n🏆 BEST PERFORMING CHAIN: {best_chain_name} ({best_accuracy:.1f}% within 5 steps)")
+
+        # Summary statistics
+        total_tests = sum(len(results) for results in self.results.values())
+        print(f"📊 TOTAL TESTS CONDUCTED: {total_tests}")
+        print(f"🔬 MARKOV CHAIN TYPES TESTED: {len(self.chains)}")
+
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        if self.error_analysis:
+            print("   • Error correlation analysis completed")
+            print("   • Problematic cases identified and analyzed")
+            print("   • Improvement suggestions generated")
+
+        print(f"\n💡 RECOMMENDATIONS:")
+        print("   • Use ensemble of top-performing chains for best accuracy")
+        print("   • Focus on magnitude-based features for large numbers")
+        print("   • Consider adaptive learning for continuous improvement")
+
+        return {
+            'best_chain': best_chain_name,
+            'best_accuracy': best_accuracy,
+            'total_tests': total_tests
+        }
+
+def main():
+    """Main execution function"""
+    print("🚀 Starting Advanced Markov Chain Collatz Trajectory Tester...")
+
+    # Initialize tester
+    tester = CollatzTrajectoryTester(
+        test_range=(2000, 50000),  # Test range
+        num_tests=10000        # Number of random tests
+    )
+
+    # Train all chains
+    tester.train_all_chains(training_size=2000)
+
+    # Run comprehensive tests
+    results = tester.run_comprehensive_test()
+
+    # Analyze results
+    accuracy_stats = tester.analyze_accuracy()
+    tester.analyze_error_correlations()
+    tester.identify_problematic_cases(error_threshold=15)
+    improvements = tester.improve_chains_based_on_analysis()
+
+    # Create visualizations
+    tester.create_visualizations()
+
+    # Generate final report
+    final_report = tester.generate_final_report()
+
+    return tester, final_report
+
+# Execute the comprehensive test
+if __name__ == "__main__":
+    tester, report = main()

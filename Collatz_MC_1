@@ -1,0 +1,483 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import defaultdict, deque
+import random
+from typing import Dict, List, Tuple, Set
+import json
+from dataclasses import dataclass
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class CollatzStats:
+    """Statistics for Collatz sequence analysis"""
+    max_value: int
+    steps_to_one: int
+    cycle_detected: bool
+    trajectory: List[int]
+
+class CollatzSequence:
+    """Core Collatz sequence operations"""
+
+    @staticmethod
+    def next_collatz(n: int) -> int:
+        """Single step of Collatz function"""
+        return n // 2 if n % 2 == 0 else 3 * n + 1
+
+    @staticmethod
+    def collatz_sequence(n: int, max_steps: int = 10000) -> CollatzStats:
+        """Generate Collatz sequence with statistics"""
+        trajectory = [n]
+        seen = {n}
+        steps = 0
+        max_val = n
+
+        while n != 1 and steps < max_steps:
+            n = CollatzSequence.next_collatz(n)
+            trajectory.append(n)
+            max_val = max(max_val, n)
+            steps += 1
+
+            if n in seen and n != 1:
+                return CollatzStats(max_val, steps, True, trajectory)
+            seen.add(n)
+
+        return CollatzStats(max_val, steps, n != 1, trajectory)
+
+class MarkovChainAnalyzer:
+    """Various Markov Chain approaches for Collatz analysis"""
+
+    def __init__(self):
+        self.transition_matrix = defaultdict(lambda: defaultdict(int))
+        self.state_frequencies = defaultdict(int)
+        self.mod_transitions = {}  # For modular arithmetic analysis
+
+    def build_basic_markov_chain(self, max_n: int = 1000, sample_size: int = 100):
+        """Build basic transition matrix from Collatz sequences"""
+        logger.info("Building basic Markov chain...")
+
+        for start in random.sample(range(2, max_n), min(sample_size, max_n-2)):
+            stats = CollatzSequence.collatz_sequence(start)
+
+            for i in range(len(stats.trajectory) - 1):
+                current = stats.trajectory[i] % 100  # Mod to keep states manageable
+                next_val = stats.trajectory[i + 1] % 100
+                self.transition_matrix[current][next_val] += 1
+                self.state_frequencies[current] += 1
+
+    def build_modular_markov_chain(self, mod: int = 8):
+        """Build Markov chain based on modular arithmetic properties"""
+        logger.info(f"Building modular Markov chain (mod {mod})...")
+
+        transitions = defaultdict(lambda: defaultdict(int))
+
+        # Analyze transitions for each residue class
+        for residue in range(mod):
+            for multiplier in [1, 2, 3, 4, 5]:  # Sample multipliers
+                n = mod * multiplier + residue
+                if n > 0:
+                    next_n = CollatzSequence.next_collatz(n)
+                    transitions[residue][next_n % mod] += 1
+
+        self.mod_transitions[mod] = transitions
+        return transitions
+
+    def build_power_law_markov_chain(self, max_n: int = 1000):
+        """Build Markov chain considering power-law distributions"""
+        logger.info("Building power-law Markov chain...")
+
+        power_transitions = defaultdict(lambda: defaultdict(int))
+
+        for start in range(2, max_n):
+            if random.random() < 0.1:  # Sample 10%
+                stats = CollatzSequence.collatz_sequence(start)
+
+                for i in range(len(stats.trajectory) - 1):
+                    # Categorize by magnitude
+                    current_power = int(np.log10(max(1, stats.trajectory[i])))
+                    next_power = int(np.log10(max(1, stats.trajectory[i + 1])))
+                    power_transitions[current_power][next_power] += 1
+
+        return power_transitions
+
+    def analyze_convergence_probability(self) -> float:
+        """Estimate probability of convergence using Markov analysis"""
+        if not self.transition_matrix:
+            return 0.0
+
+        # Simple convergence estimation based on transitions to lower values
+        convergent_transitions = 0
+        total_transitions = 0
+
+        for state, transitions in self.transition_matrix.items():
+            for next_state, count in transitions.items():
+                total_transitions += count
+                if next_state < state or next_state == 1:
+                    convergent_transitions += count
+
+        return convergent_transitions / max(total_transitions, 1)
+
+class FiniteStateAutomaton:
+    """FSA approach to Collatz analysis"""
+
+    def __init__(self):
+        self.states = set()
+        self.transitions = {}
+        self.accepting_states = {1}  # State 1 is accepting (convergent)
+        self.rejecting_states = set()  # Cycles or divergence
+
+    def build_fsa(self, max_states: int = 200):
+        """Build FSA for Collatz sequences with bounded states"""
+        logger.info("Building Finite State Automaton...")
+
+        # Create states (bounded by max_states for computational feasibility)
+        self.states = set(range(1, max_states + 1))
+
+        # Build transitions
+        for state in self.states:
+            next_state = CollatzSequence.next_collatz(state)
+            if next_state <= max_states:
+                self.transitions[state] = next_state
+            else:
+                # States that go beyond bounds are marked as "unknown"
+                self.transitions[state] = -1  # Special "overflow" state
+
+    def simulate_fsa(self, start: int, max_steps: int = 1000) -> Tuple[bool, int]:
+        """Simulate FSA execution"""
+        if start not in self.states and start <= max(self.states):
+            return False, 0
+
+        current = start
+        steps = 0
+
+        while steps < max_steps:
+            if current in self.accepting_states:
+                return True, steps
+            if current in self.rejecting_states or current == -1:
+                return False, steps
+
+            current = self.transitions.get(current, -1)
+            steps += 1
+
+        return False, steps  # Timeout
+
+class MachineLearningPredictor:
+    """ML approaches for Collatz prediction"""
+
+    def __init__(self):
+        self.features = []
+        self.labels = []
+        self.model_weights = None
+
+    def extract_features(self, n: int) -> List[float]:
+        """Extract features from a number for ML prediction"""
+        features = [
+            n,
+            n % 2,  # Parity
+            n % 4,  # Mod 4
+            n % 8,  # Mod 8
+            int(np.log2(max(1, n))),  # Binary length
+            bin(n).count('1'),  # Hamming weight
+            n & (n - 1) == 0,  # Power of 2
+            len(str(n)),  # Decimal digits
+        ]
+        return [float(f) for f in features]
+
+    def collect_training_data(self, max_n: int = 1000, sample_size: int = 500):
+        """Collect training data from Collatz sequences"""
+        logger.info("Collecting ML training data...")
+
+        for start in random.sample(range(2, max_n), min(sample_size, max_n-2)):
+            stats = CollatzSequence.collatz_sequence(start)
+            features = self.extract_features(start)
+
+            # Label: 1 if converges to 1, 0 if cycle/divergence detected
+            label = 1 if not stats.cycle_detected and stats.trajectory[-1] == 1 else 0
+
+            self.features.append(features)
+            self.labels.append(label)
+
+    def simple_linear_regression(self):
+        """Simple linear regression for convergence prediction"""
+        if not self.features:
+            return
+
+        X = np.array(self.features)
+        y = np.array(self.labels)
+
+        # Add bias term
+        X = np.column_stack([np.ones(len(X)), X])
+
+        # Simple least squares solution
+        try:
+            self.model_weights = np.linalg.lstsq(X, y, rcond=None)[0]
+        except np.linalg.LinAlgError:
+            logger.warning("Linear regression failed, using random weights")
+            self.model_weights = np.random.randn(X.shape[1]) * 0.1
+
+    def predict_convergence(self, n: int) -> float:
+        """Predict convergence probability using ML model"""
+        if self.model_weights is None:
+            return 0.5  # Random guess
+
+        features = [1.0] + self.extract_features(n)  # Add bias
+        prediction = np.dot(features, self.model_weights)
+
+        # Apply sigmoid to get probability
+        return 1 / (1 + np.exp(-prediction))
+
+class SymbolicAnalyzer:
+    """Symbolic methods for Collatz analysis"""
+
+    def __init__(self):
+        self.invariants = []
+        self.patterns = {}
+
+    def find_cycle_patterns(self, max_n: int = 1000) -> Dict[int, List[int]]:
+        """Search for cycles and patterns in Collatz sequences"""
+        logger.info("Searching for symbolic patterns...")
+
+        patterns = defaultdict(list)
+
+        for start in range(2, max_n):
+            if start % 100 == 0:
+                logger.info(f"Analyzing number {start}")
+
+            stats = CollatzSequence.collatz_sequence(start)
+
+            # Look for patterns in the trajectory
+            if len(stats.trajectory) > 10:
+                # Check for repeating subsequences
+                for length in range(2, min(10, len(stats.trajectory) // 3)):
+                    for i in range(len(stats.trajectory) - 2 * length):
+                        subseq1 = stats.trajectory[i:i+length]
+                        subseq2 = stats.trajectory[i+length:i+2*length]
+                        if subseq1 == subseq2:
+                            patterns[tuple(subseq1)].append(start)
+
+        return dict(patterns)
+
+    def analyze_stopping_times(self, max_n: int = 1000) -> Dict[str, float]:
+        """Analyze stopping time statistics"""
+        stopping_times = []
+        max_values = []
+
+        for start in range(2, max_n):
+            stats = CollatzSequence.collatz_sequence(start)
+            if not stats.cycle_detected and stats.trajectory[-1] == 1:
+                stopping_times.append(stats.steps_to_one)
+                max_values.append(stats.max_value)
+
+        if not stopping_times:
+            return {}
+
+        return {
+            'mean_stopping_time': np.mean(stopping_times),
+            'std_stopping_time': np.std(stopping_times),
+            'mean_max_value': np.mean(max_values),
+            'max_stopping_time': max(stopping_times),
+            'convergence_rate': len(stopping_times) / (max_n - 2)
+        }
+
+class CollatzSolver:
+    """Main solver combining all methods"""
+
+    def __init__(self):
+        self.markov_analyzer = MarkovChainAnalyzer()
+        self.fsa = FiniteStateAutomaton()
+        self.ml_predictor = MachineLearningPredictor()
+        self.symbolic_analyzer = SymbolicAnalyzer()
+        self.results = {}
+
+    def comprehensive_analysis(self, max_n: int = 1000, test_numbers: List[int] = None):
+        """Run comprehensive analysis using all methods"""
+        logger.info("Starting comprehensive Collatz analysis...")
+
+        if test_numbers is None:
+            test_numbers = list(range(2, min(100, max_n)))
+
+        # Build all models
+        self.markov_analyzer.build_basic_markov_chain(max_n, 200)
+        self.markov_analyzer.build_modular_markov_chain(8)
+        self.markov_analyzer.build_power_law_markov_chain(max_n)
+
+        self.fsa.build_fsa(200)
+
+        self.ml_predictor.collect_training_data(max_n, 300)
+        self.ml_predictor.simple_linear_regression()
+
+        # Analyze each test number
+        results = {
+            'basic_markov_accuracy': [],
+            'fsa_accuracy': [],
+            'ml_accuracy': [],
+            'combined_accuracy': [],
+            'ground_truth': []
+        }
+
+        for n in test_numbers:
+            # Ground truth
+            stats = CollatzSequence.collatz_sequence(n)
+            ground_truth = 1 if not stats.cycle_detected and stats.trajectory[-1] == 1 else 0
+            results['ground_truth'].append(ground_truth)
+
+            # Markov prediction
+            markov_prob = self.markov_analyzer.analyze_convergence_probability()
+            markov_pred = 1 if markov_prob > 0.5 else 0
+            results['basic_markov_accuracy'].append(1 if markov_pred == ground_truth else 0)
+
+            # FSA prediction
+            fsa_converges, _ = self.fsa.simulate_fsa(n)
+            fsa_pred = 1 if fsa_converges else 0
+            results['fsa_accuracy'].append(1 if fsa_pred == ground_truth else 0)
+
+            # ML prediction
+            ml_prob = self.ml_predictor.predict_convergence(n)
+            ml_pred = 1 if ml_prob > 0.5 else 0
+            results['ml_accuracy'].append(1 if ml_pred == ground_truth else 0)
+
+            # Combined prediction (ensemble)
+            combined_score = (markov_prob + float(fsa_converges) + ml_prob) / 3
+            combined_pred = 1 if combined_score > 0.5 else 0
+            results['combined_accuracy'].append(1 if combined_pred == ground_truth else 0)
+
+        self.results = results
+        return results
+
+    def print_accuracy_report(self):
+        """Print comprehensive accuracy report"""
+        if not self.results:
+            print("No results available. Run comprehensive_analysis first.")
+            return
+
+        print("\n" + "="*60)
+        print("COLLATZ CONJECTURE COMPUTATIONAL ANALYSIS REPORT")
+        print("="*60)
+
+        methods = {
+            'Basic Markov Chain': 'basic_markov_accuracy',
+            'Finite State Automaton': 'fsa_accuracy',
+            'Machine Learning': 'ml_accuracy',
+            'Combined Ensemble': 'combined_accuracy'
+        }
+
+        for method_name, key in methods.items():
+            accuracy = np.mean(self.results[key]) * 100
+            print(f"{method_name:.<30} {accuracy:.1f}%")
+
+        # Additional analysis
+        total_tested = len(self.results['ground_truth'])
+        convergent_cases = sum(self.results['ground_truth'])
+
+        print(f"\nTest Statistics:")
+        print(f"Total numbers tested: {total_tested}")
+        print(f"Convergent cases: {convergent_cases} ({convergent_cases/total_tested*100:.1f}%)")
+
+        # Symbolic analysis results
+        patterns = self.symbolic_analyzer.find_cycle_patterns(100)
+        stopping_stats = self.symbolic_analyzer.analyze_stopping_times(100)
+
+        print(f"\nSymbolic Analysis:")
+        print(f"Patterns found: {len(patterns)}")
+        if stopping_stats:
+            print(f"Mean stopping time: {stopping_stats.get('mean_stopping_time', 0):.2f}")
+            print(f"Convergence rate: {stopping_stats.get('convergence_rate', 0)*100:.1f}%")
+
+        print("\n" + "="*60)
+        print("CONCLUSION:")
+        print("="*60)
+
+        best_method = max(methods.items(), key=lambda x: np.mean(self.results[x[1]]))
+        best_accuracy = np.mean(self.results[best_method[1]]) * 100
+
+        print(f"Best performing method: {best_method[0]} ({best_accuracy:.1f}%)")
+
+        if best_accuracy > 95:
+            print("✓ High accuracy achieved - computational evidence supports conjecture")
+        elif best_accuracy > 80:
+            print("~ Moderate accuracy - some computational evidence for conjecture")
+        else:
+            print("✗ Low accuracy - computational methods inconclusive")
+
+        print("\nNote: This analysis tests the conjecture on a limited range.")
+        print("Mathematical proof remains an open problem.")
+
+    def visualize_results(self):
+        """Create visualizations of the analysis results"""
+        if not self.results:
+            return
+
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
+
+        # Accuracy comparison
+        methods = ['Markov', 'FSA', 'ML', 'Combined']
+        accuracies = [
+            np.mean(self.results['basic_markov_accuracy']),
+            np.mean(self.results['fsa_accuracy']),
+            np.mean(self.results['ml_accuracy']),
+            np.mean(self.results['combined_accuracy'])
+        ]
+
+        ax1.bar(methods, accuracies, color=['blue', 'green', 'red', 'purple'])
+        ax1.set_ylabel('Accuracy')
+        ax1.set_title('Method Comparison')
+        ax1.set_ylim(0, 1)
+
+        # Sample Collatz trajectory
+        sample_stats = CollatzSequence.collatz_sequence(27)  # Famous example
+        ax2.plot(sample_stats.trajectory, 'o-')
+        ax2.set_ylabel('Value')
+        ax2.set_xlabel('Step')
+        ax2.set_title('Collatz Sequence for n=27')
+        ax2.set_yscale('log')
+
+        # Stopping time distribution
+        stopping_times = []
+        for n in range(2, 100):
+            stats = CollatzSequence.collatz_sequence(n)
+            if not stats.cycle_detected and stats.trajectory[-1] == 1:
+                stopping_times.append(stats.steps_to_one)
+
+        ax3.hist(stopping_times, bins=20, alpha=0.7, color='orange')
+        ax3.set_xlabel('Stopping Time')
+        ax3.set_ylabel('Frequency')
+        ax3.set_title('Distribution of Stopping Times')
+
+        # Accuracy over test range
+        test_range = range(len(self.results['ground_truth']))
+        ax4.plot(test_range, np.cumsum(self.results['combined_accuracy']) / np.arange(1, len(test_range) + 1),
+                'purple', label='Combined', linewidth=2)
+        ax4.plot(test_range, np.cumsum(self.results['ml_accuracy']) / np.arange(1, len(test_range) + 1),
+                'red', label='ML', alpha=0.7)
+        ax4.set_xlabel('Test Number')
+        ax4.set_ylabel('Cumulative Accuracy')
+        ax4.set_title('Accuracy Evolution')
+        ax4.legend()
+        ax4.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        plt.show()
+
+def main():
+    """Main execution function"""
+    print("Initializing Collatz Conjecture Computational Solver...")
+
+    solver = CollatzSolver()
+
+    # Run comprehensive analysis
+    test_numbers = list(range(2, 51))  # Test first 50 numbers
+    solver.comprehensive_analysis(max_n=500, test_numbers=test_numbers)
+
+    # Print results
+    solver.print_accuracy_report()
+
+    # Create visualizations
+    solver.visualize_results()
+
+    return solver
+
+# Example usage
+if __name__ == "__main__":
+    solver = main()

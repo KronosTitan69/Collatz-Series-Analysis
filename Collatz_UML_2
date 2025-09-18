@@ -1,0 +1,495 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from collections import defaultdict, Counter
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.preprocessing import StandardScaler
+from scipy import stats
+from scipy.special import comb
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+
+class CollatzAnalyzer:
+    def __init__(self):
+        self.stopping_times = {}
+        self.max_value_reached = {}
+        self.patterns_by_stopping_time = defaultdict(list)
+
+    def collatz_sequence(self, n, max_iterations=10000):
+        """Generate Collatz sequence and return stopping time and max value"""
+        original_n = n
+        steps = 0
+        max_val = n
+
+        while n != 1 and steps < max_iterations:
+            if n % 2 == 0:
+                n = n // 2
+            else:
+                n = 3 * n + 1
+            max_val = max(max_val, n)
+            steps += 1
+
+        return steps if n == 1 else -1, max_val
+
+    def compute_stopping_times(self, max_n=10000):
+        """Compute stopping times for numbers 1 to max_n"""
+        print(f"Computing stopping times for numbers 1 to {max_n}...")
+
+        for n in range(1, max_n + 1):
+            stopping_time, max_val = self.collatz_sequence(n)
+            if stopping_time != -1:
+                self.stopping_times[n] = stopping_time
+                self.max_value_reached[n] = max_val
+                self.patterns_by_stopping_time[stopping_time].append(n)
+
+            if n % 1000 == 0:
+                print(f"Processed {n} numbers...")
+
+    def extract_number_features(self, n):
+        """Extract mathematical features from a number"""
+        features = {}
+
+        # Basic properties
+        features['number'] = n
+        features['log_n'] = np.log(n)
+        features['sqrt_n'] = np.sqrt(n)
+
+        # Binary representation features
+        binary_repr = bin(n)[2:]
+        features['bit_length'] = len(binary_repr)
+        features['num_ones'] = binary_repr.count('1')
+        features['num_zeros'] = binary_repr.count('0')
+        features['ones_ratio'] = features['num_ones'] / features['bit_length']
+
+        # Divisibility features
+        features['is_power_of_2'] = (n & (n-1)) == 0
+        features['factors_of_2'] = 0
+        temp = n
+        while temp % 2 == 0:
+            features['factors_of_2'] += 1
+            temp //= 2
+
+        # Modular arithmetic features
+        for base in [3, 5, 7, 11, 13]:
+            features[f'mod_{base}'] = n % base
+
+        # Digital root
+        features['digital_root'] = self.digital_root(n)
+
+        # Sum of digits
+        features['digit_sum'] = sum(int(d) for d in str(n))
+
+        return features
+
+    def digital_root(self, n):
+        """Compute digital root of a number"""
+        while n >= 10:
+            n = sum(int(digit) for digit in str(n))
+        return n
+
+    def analyze_patterns_by_stopping_time(self):
+        """Analyze patterns within each stopping time group"""
+        print("\nAnalyzing patterns by stopping time...")
+
+        pattern_analysis = {}
+
+        for stopping_time, numbers in self.patterns_by_stopping_time.items():
+            if len(numbers) < 5:  # Skip groups with too few numbers
+                continue
+
+            analysis = {}
+            analysis['count'] = len(numbers)
+            analysis['numbers'] = numbers[:20]  # Store first 20 for display
+
+            # Extract features for all numbers in this group
+            features = [self.extract_number_features(n) for n in numbers]
+            df = pd.DataFrame(features)
+
+            # Statistical analysis
+            analysis['mean_log_n'] = df['log_n'].mean()
+            analysis['std_log_n'] = df['log_n'].std()
+            analysis['mean_bit_length'] = df['bit_length'].mean()
+            analysis['mean_ones_ratio'] = df['ones_ratio'].mean()
+            analysis['most_common_mod_3'] = df['mod_3'].mode().iloc[0] if len(df['mod_3'].mode()) > 0 else None
+            analysis['most_common_digital_root'] = df['digital_root'].mode().iloc[0] if len(df['digital_root'].mode()) > 0 else None
+
+            # Modular distribution analysis
+            mod_distributions = {}
+            for base in [3, 5, 7, 11]:
+                mod_dist = df[f'mod_{base}'].value_counts().to_dict()
+                mod_distributions[base] = mod_dist
+            analysis['mod_distributions'] = mod_distributions
+
+            pattern_analysis[stopping_time] = analysis
+
+        return pattern_analysis
+
+    def machine_learning_analysis(self):
+        """Apply ML algorithms to predict stopping times"""
+        print("\nPerforming machine learning analysis...")
+
+        # Prepare data
+        X = []
+        y = []
+
+        for n, stopping_time in self.stopping_times.items():
+            features = self.extract_number_features(n)
+            feature_vector = [
+                features['log_n'], features['bit_length'], features['num_ones'],
+                features['ones_ratio'], features['factors_of_2'],
+                features['mod_3'], features['mod_5'], features['mod_7'],
+                features['digital_root'], features['digit_sum']
+            ]
+            X.append(feature_vector)
+            y.append(stopping_time)
+
+        X = np.array(X)
+        y = np.array(y)
+
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Scale features
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+
+        # Train models
+        models = {
+            'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
+            'Gradient Boosting': GradientBoostingClassifier(n_estimators=100, random_state=42)
+        }
+
+        results = {}
+        for name, model in models.items():
+            model.fit(X_train_scaled, y_train)
+            y_pred = model.predict(X_test_scaled)
+            accuracy = accuracy_score(y_test, y_pred)
+            results[name] = {
+                'accuracy': accuracy,
+                'model': model,
+                'feature_importance': model.feature_importances_ if hasattr(model, 'feature_importances_') else None
+            }
+
+        return results, scaler, ['log_n', 'bit_length', 'num_ones', 'ones_ratio',
+                                'factors_of_2', 'mod_3', 'mod_5', 'mod_7',
+                                'digital_root', 'digit_sum']
+
+    def analyze_invariant_patterns(self, test_ranges=[(1, 1000), (1000, 5000), (5000, 10000)]):
+        """Find patterns that remain consistent across different ranges"""
+        print("\nAnalyzing invariant patterns across different ranges...")
+
+        invariant_analysis = {}
+
+        for start, end in test_ranges:
+            range_patterns = {}
+
+            # Analyze patterns in this range
+            range_numbers = {n: st for n, st in self.stopping_times.items()
+                           if start <= n <= end}
+
+            # Group by stopping time
+            range_groups = defaultdict(list)
+            for n, st in range_numbers.items():
+                range_groups[st].append(n)
+
+            # Analyze each group
+            for st, numbers in range_groups.items():
+                if len(numbers) < 3:
+                    continue
+
+                features = [self.extract_number_features(n) for n in numbers]
+                df = pd.DataFrame(features)
+
+                patterns = {
+                    'mod_3_distribution': df['mod_3'].value_counts(normalize=True).to_dict(),
+                    'mod_5_distribution': df['mod_5'].value_counts(normalize=True).to_dict(),
+                    'digital_root_distribution': df['digital_root'].value_counts(normalize=True).to_dict(),
+                    'mean_ones_ratio': df['ones_ratio'].mean(),
+                    'mean_factors_of_2': df['factors_of_2'].mean()
+                }
+
+                range_patterns[st] = patterns
+
+            invariant_analysis[f'{start}-{end}'] = range_patterns
+
+        # Find invariant patterns
+        invariant_patterns = self.find_invariant_properties(invariant_analysis)
+
+        return invariant_analysis, invariant_patterns
+
+    def find_invariant_properties(self, range_analysis):
+        """Identify properties that remain consistent across ranges"""
+        invariant_patterns = {}
+
+        # Get common stopping times across all ranges
+        all_stopping_times = set()
+        for range_key, patterns in range_analysis.items():
+            all_stopping_times.update(patterns.keys())
+
+        for st in all_stopping_times:
+            # Check if this stopping time appears in all ranges
+            st_data = []
+            for range_key, patterns in range_analysis.items():
+                if st in patterns:
+                    st_data.append(patterns[st])
+
+            if len(st_data) < 2:
+                continue
+
+            # Analyze consistency
+            invariant_props = {}
+
+            # Check mod_3 distribution consistency
+            mod_3_dists = [data.get('mod_3_distribution', {}) for data in st_data]
+            if all(mod_3_dists):
+                mod_3_consistency = self.calculate_distribution_consistency(mod_3_dists)
+                invariant_props['mod_3_consistency'] = mod_3_consistency
+
+            # Check other properties
+            ones_ratios = [data.get('mean_ones_ratio', 0) for data in st_data]
+            if ones_ratios:
+                invariant_props['ones_ratio_stability'] = np.std(ones_ratios)
+
+            invariant_patterns[st] = invariant_props
+
+        return invariant_patterns
+
+    def calculate_distribution_consistency(self, distributions):
+        """Calculate how consistent distributions are across ranges"""
+        if len(distributions) < 2:
+            return 0
+
+        # Use Jensen-Shannon divergence for consistency measure
+        from scipy.spatial.distance import jensenshannon
+
+        consistencies = []
+        for i in range(len(distributions)):
+            for j in range(i+1, len(distributions)):
+                dist1 = distributions[i]
+                dist2 = distributions[j]
+
+                # Align distributions
+                all_keys = set(dist1.keys()) | set(dist2.keys())
+                vec1 = [dist1.get(k, 0) for k in sorted(all_keys)]
+                vec2 = [dist2.get(k, 0) for k in sorted(all_keys)]
+
+                # Calculate consistency (1 - JS divergence)
+                consistency = 1 - jensenshannon(vec1, vec2)
+                consistencies.append(consistency)
+
+        return np.mean(consistencies)
+
+    def visualize_results(self, pattern_analysis, ml_results, invariant_analysis):
+        """Create comprehensive visualizations"""
+        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+
+        # 1. Distribution of stopping times
+        stopping_times_list = list(self.stopping_times.values())
+        axes[0, 0].hist(stopping_times_list, bins=50, alpha=0.7, color='blue')
+        axes[0, 0].set_title('Distribution of Stopping Times')
+        axes[0, 0].set_xlabel('Stopping Time')
+        axes[0, 0].set_ylabel('Frequency')
+
+        # 2. Stopping time vs number (log scale)
+        numbers = list(self.stopping_times.keys())
+        stopping_times = list(self.stopping_times.values())
+        axes[0, 1].scatter(numbers, stopping_times, alpha=0.5, s=1)
+        axes[0, 1].set_xscale('log')
+        axes[0, 1].set_title('Stopping Time vs Number (Log Scale)')
+        axes[0, 1].set_xlabel('Number (log scale)')
+        axes[0, 1].set_ylabel('Stopping Time')
+
+        # 3. Feature importance from ML
+        if ml_results and 'Random Forest' in ml_results[0]:
+            feature_names = ml_results[2]
+            importances = ml_results[0]['Random Forest']['feature_importance']
+            axes[0, 2].bar(feature_names, importances)
+            axes[0, 2].set_title('Feature Importance (Random Forest)')
+            axes[0, 2].set_xlabel('Features')
+            axes[0, 2].set_ylabel('Importance')
+            axes[0, 2].tick_params(axis='x', rotation=45)
+
+        # 4. Pattern consistency across ranges
+        if invariant_analysis:
+            consistency_scores = []
+            stopping_times_inv = []
+            for st, props in invariant_analysis[1].items():
+                if 'mod_3_consistency' in props:
+                    consistency_scores.append(props['mod_3_consistency'])
+                    stopping_times_inv.append(st)
+
+            if consistency_scores:
+                axes[1, 0].scatter(stopping_times_inv, consistency_scores)
+                axes[1, 0].set_title('Mod-3 Pattern Consistency Across Ranges')
+                axes[1, 0].set_xlabel('Stopping Time')
+                axes[1, 0].set_ylabel('Consistency Score')
+
+        # 5. Group sizes by stopping time
+        group_sizes = [len(nums) for nums in self.patterns_by_stopping_time.values()]
+        group_stopping_times = list(self.patterns_by_stopping_time.keys())
+        axes[1, 1].scatter(group_stopping_times, group_sizes)
+        axes[1, 1].set_yscale('log')
+        axes[1, 1].set_title('Group Sizes by Stopping Time')
+        axes[1, 1].set_xlabel('Stopping Time')
+        axes[1, 1].set_ylabel('Number of Numbers (log scale)')
+
+        # 6. Modular pattern heatmap for common stopping times
+        common_stopping_times = sorted([st for st, nums in self.patterns_by_stopping_time.items()
+                                      if len(nums) >= 10])[:10]
+
+        if common_stopping_times:
+            mod_matrix = []
+            for st in common_stopping_times:
+                numbers = self.patterns_by_stopping_time[st]
+                mod_3_dist = [0, 0, 0]
+                for n in numbers:
+                    mod_3_dist[n % 3] += 1
+                # Normalize
+                total = sum(mod_3_dist)
+                mod_3_dist = [x/total for x in mod_3_dist]
+                mod_matrix.append(mod_3_dist)
+
+            im = axes[1, 2].imshow(mod_matrix, cmap='viridis', aspect='auto')
+            axes[1, 2].set_title('Mod-3 Distribution Heatmap')
+            axes[1, 2].set_xlabel('Remainder (mod 3)')
+            axes[1, 2].set_ylabel('Stopping Time')
+            axes[1, 2].set_yticks(range(len(common_stopping_times)))
+            axes[1, 2].set_yticklabels(common_stopping_times)
+            axes[1, 2].set_xticks([0, 1, 2])
+            plt.colorbar(im, ax=axes[1, 2])
+
+        plt.tight_layout()
+        plt.show()
+
+    def run_complete_analysis(self, max_n=10000):
+        """Run the complete analysis pipeline"""
+        print("=== COLLATZ CONJECTURE STOPPING TIME PATTERN ANALYSIS ===\n")
+
+        # 1. Compute stopping times
+        self.compute_stopping_times(max_n)
+
+        # 2. Analyze patterns by stopping time
+        pattern_analysis = self.analyze_patterns_by_stopping_time()
+
+        # 3. Machine learning analysis
+        ml_results = self.machine_learning_analysis()
+
+        # 4. Invariant pattern analysis
+        invariant_analysis = self.analyze_invariant_patterns()
+
+        # 5. Generate report
+        self.generate_report(pattern_analysis, ml_results, invariant_analysis)
+
+        # 6. Create visualizations
+        self.visualize_results(pattern_analysis, ml_results, invariant_analysis)
+
+        return pattern_analysis, ml_results, invariant_analysis
+
+    def generate_report(self, pattern_analysis, ml_results, invariant_analysis):
+        """Generate comprehensive analysis report"""
+        print("\n" + "="*60)
+        print("COMPREHENSIVE ANALYSIS REPORT")
+        print("="*60)
+
+        # Basic statistics
+        print(f"\nBASIC STATISTICS:")
+        print(f"Numbers analyzed: {len(self.stopping_times)}")
+        print(f"Unique stopping times: {len(set(self.stopping_times.values()))}")
+        print(f"Most common stopping time: {Counter(self.stopping_times.values()).most_common(1)[0]}")
+        print(f"Average stopping time: {np.mean(list(self.stopping_times.values())):.2f}")
+
+        # Pattern analysis highlights
+        print(f"\nPATTERN ANALYSIS HIGHLIGHTS:")
+        for st in sorted(pattern_analysis.keys())[:10]:
+            analysis = pattern_analysis[st]
+            print(f"Stopping time {st}: {analysis['count']} numbers")
+            print(f"  - Mean ones ratio: {analysis['mean_ones_ratio']:.3f}")
+            print(f"  - Most common mod 3: {analysis['most_common_mod_3']}")
+            print(f"  - Digital root mode: {analysis['most_common_digital_root']}")
+
+        # ML Results
+        print(f"\nMACHINE LEARNING RESULTS:")
+        if ml_results:
+            for model_name, results in ml_results[0].items():
+                print(f"{model_name} accuracy: {results['accuracy']:.3f}")
+
+            print("\nTop 5 most important features:")
+            if 'Random Forest' in ml_results[0]:
+                feature_importance = list(zip(ml_results[2], ml_results[0]['Random Forest']['feature_importance']))
+                feature_importance.sort(key=lambda x: x[1], reverse=True)
+                for feat, imp in feature_importance[:5]:
+                    print(f"  {feat}: {imp:.3f}")
+
+        # Invariant patterns
+        print(f"\nINVARIANT PATTERN ANALYSIS:")
+        if invariant_analysis and invariant_analysis[1]:
+            print("Most consistent patterns across ranges:")
+            consistency_items = [(st, props.get('mod_3_consistency', 0))
+                               for st, props in invariant_analysis[1].items()]
+            consistency_items.sort(key=lambda x: x[1], reverse=True)
+
+            for st, consistency in consistency_items[:5]:
+                if consistency > 0:
+                    print(f"  Stopping time {st}: {consistency:.3f} consistency")
+
+# Research Tips and Recommendations
+def print_research_tips():
+    print("\n" + "="*60)
+    print("RESEARCH TIPS FOR BETTER ACCURACY")
+    print("="*60)
+
+    tips = [
+        "1. COMPUTATIONAL APPROACHES:",
+        "   - Use arbitrary precision arithmetic for very large numbers",
+        "   - Implement parallel processing for large-scale analysis",
+        "   - Consider GPU acceleration for massive computations",
+
+        "2. MATHEMATICAL ENHANCEMENTS:",
+        "   - Explore connections to number theory (especially modular arithmetic)",
+        "   - Investigate relationships with binary representations",
+        "   - Study fractal properties of the Collatz tree",
+
+        "3. ADVANCED PATTERN RECOGNITION:",
+        "   - Use deep learning models (LSTM/GRU for sequence analysis)",
+        "   - Apply time series analysis techniques",
+        "   - Implement ensemble methods combining multiple predictors",
+
+        "4. STATISTICAL IMPROVEMENTS:",
+        "   - Use bootstrap sampling for confidence intervals",
+        "   - Apply Bayesian methods for uncertainty quantification",
+        "   - Implement cross-validation with temporal splits",
+
+        "5. INVARIANT PATTERN DISCOVERY:",
+        "   - Test patterns across different number bases",
+        "   - Analyze stopping times modulo various primes",
+        "   - Study persistence of patterns at different scales",
+
+        "6. RAMANUJAN MACHINE INTEGRATION:",
+        "   - Use for discovering new mathematical constants",
+        "   - Apply for finding generating functions",
+        "   - Leverage for pattern recognition in continued fractions",
+
+        "7. VALIDATION STRATEGIES:",
+        "   - Test patterns on numbers with known difficult cases",
+        "   - Use holdout sets with very large numbers",
+        "   - Cross-validate findings with theoretical predictions"
+    ]
+
+    for tip in tips:
+        print(tip)
+
+# Run the analysis
+if __name__ == "__main__":
+    analyzer = CollatzAnalyzer()
+
+    # Note: For demonstration, using smaller numbers.
+    # Increase max_n for more comprehensive analysis
+    results = analyzer.run_complete_analysis(max_n=5000)
+
+    

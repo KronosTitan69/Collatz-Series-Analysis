@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from IPython.display import HTML
+
+# Example: Collatz variant (change rules as needed)
+def odd_rule(z):   # 3n*i + 1
+    return 3*z*1j + 1
+def even_rule(z):  # 0.5*n
+    return 0.5*z*1j
+
+def collatz_imaginary_series(n, odd_rule, even_rule, max_iter=5000):
+    seq = []
+    z = complex(n)
+    for _ in range(max_iter):
+        seq.append(z)
+        # Add a check for divergence
+        if np.abs(z) > 1e10:  # Define a large threshold for divergence
+            break
+        # Add a check for NaN or infinity
+        if np.isnan(z.real) or np.isinf(z.real) or np.isnan(z.imag) or np.isinf(z.imag):
+            break
+        try:
+            # Check if z is even (real part is an even integer and imag part is zero)
+            if int(z.real) % 2 == 0:
+                z = even_rule(z)
+            else:
+                z = odd_rule(z)
+        except OverflowError:
+            # Handle potential overflow during integer conversion
+            break
+    return seq
+
+start_vals = range(1,10)
+sequences = [collatz_imaginary_series(start, odd_rule, even_rule, max_iter=300) for start in start_vals]
+max_len = max(len(seq) for seq in sequences)
+cmap = plt.cm.twilight
+colors = [cmap(i / len(start_vals)) for i in range(len(start_vals))]
+
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.set_title("Live Animation: Collatz Complex Trajectories (Colab compatible)")
+ax.set_xlabel("Real")
+ax.set_ylabel("Imaginary")
+ax.grid(True, linestyle='--', alpha=0.5)
+# Auto-scale axes based on data range
+all_reals = [z.real for seq in sequences for z in seq]
+all_imags = [z.imag for seq in sequences for z in seq]
+if all_reals and all_imags:
+    ax.set_xlim(min(all_reals) - 1, max(all_reals) + 1)
+    ax.set_ylim(min(all_imags) - 1, max(all_imags) + 1)
+
+
+lines = [ax.plot([], [], color=colors[i], linewidth=2)[0] for i in range(len(start_vals))]
+points = [ax.plot([], [], 'o', color=colors[i], markersize=6)[0] for i in range(len(start_vals))]
+
+def init():
+    for line, point in zip(lines, points):
+        line.set_data([], [])
+        point.set_data([], [])
+    return lines + points
+
+def animate(frame):
+    for i, seq in enumerate(sequences):
+        x = [z.real for z in seq[:frame+1]]
+        y = [z.imag for z in seq[:frame+1]]
+        lines[i].set_data(x, y)
+        if len(x) > 0:
+            points[i].set_data([x[-1]], [y[-1]]) # Pass as lists
+    return lines + points
+
+ani = animation.FuncAnimation(fig, animate, frames=max_len, init_func=init,
+                              interval=200, blit=False, repeat=False)
+
+plt.close(fig)  # Prevents static duplicate image
+HTML(ani.to_jshtml())

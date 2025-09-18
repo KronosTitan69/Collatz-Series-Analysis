@@ -1,0 +1,1369 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, IsolationForest
+from sklearn.linear_model import LinearRegression, Ridge, HuberRegressor, RANSACRegressor, QuantileRegressor
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit, StratifiedKFold
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.feature_selection import mutual_info_regression
+from sklearn.metrics import normalized_mutual_info_score
+from scipy import stats
+from scipy.optimize import curve_fit
+import warnings
+warnings.filterwarnings('ignore')
+
+# Additional imports for advanced features
+try:
+    from hmmlearn import hmm
+    HMM_AVAILABLE = True
+except ImportError:
+    HMM_AVAILABLE = False
+    print("hmmlearn not available - HMM analysis will be skipped")
+
+try:
+    from gplearn.genetic import SymbolicRegressor
+    GPLEARN_AVAILABLE = True
+except ImportError:
+    GPLEARN_AVAILABLE = False
+    print("gplearn not available - symbolic regression will be skipped")
+
+try:
+    import ripser
+    from persim import plot_diagrams
+    TOPOLOGY_AVAILABLE = True
+except ImportError:
+    TOPOLOGY_AVAILABLE = False
+    print("ripser/persim not available - topological analysis will be skipped")
+
+class AdvancedCollatzAnalyzer:
+    def __init__(self):
+        self.trajectories = {}
+        self.stopping_times = {}
+        self.max_values = {}
+        self.features_df = None
+        self.trajectory_features = {}
+        self.ml_results = {}
+        self.pattern_consistency = {}
+
+    def collatz_sequence(self, n, max_steps=10000):
+        """Generate Collatz sequence for a given number"""
+        sequence = [n]
+        steps = 0
+        max_val = n
+
+        while n != 1 and steps < max_steps:
+            if n % 2 == 0:
+                n = n // 2
+            else:
+                n = 3 * n + 1
+
+            sequence.append(n)
+            max_val = max(max_val, n)
+            steps += 1
+
+        return sequence, steps, max_val
+
+    def generate_data(self, start=1, end=10000, step=1):
+        """Generate Collatz data for analysis"""
+        print(f"Generating Collatz data for numbers {start} to {end}...")
+
+        for i in range(start, end + 1, step):
+            if i % 1000 == 0:
+                print(f"Processing {i}...")
+
+            sequence, stopping_time, max_val = self.collatz_sequence(i)
+
+            self.trajectories[i] = sequence
+            self.stopping_times[i] = stopping_time
+            self.max_values[i] = max_val
+
+    def get_prime_factors(self, n):
+        """Get prime factors of n"""
+        factors = []
+        d = 2
+        while d * d <= n:
+            while n % d == 0:
+                factors.append(d)
+                n //= d
+            d += 1
+        if n > 1:
+            factors.append(n)
+        return factors
+
+    def is_prime_power(self, n):
+        """Check if n is a prime power"""
+        if n <= 1:
+            return False
+        factors = self.get_prime_factors(n)
+        return len(set(factors)) == 1
+
+    def p_adic_valuation(self, n, p):
+        """Calculate p-adic valuation of n"""
+        if n == 0:
+            return float('inf')
+        valuation = 0
+        while n % p == 0:
+            n //= p
+            valuation += 1
+        return valuation
+
+    def count_oscillations(self, sequence):
+        """Count oscillations in sequence"""
+        if len(sequence) < 3:
+            return 0
+
+        oscillations = 0
+        for i in range(1, len(sequence) - 1):
+            if ((sequence[i] > sequence[i-1] and sequence[i] > sequence[i+1]) or
+                (sequence[i] < sequence[i-1] and sequence[i] < sequence[i+1])):
+                oscillations += 1
+        return oscillations
+
+    def calculate_descent_rate(self, sequence):
+        """Calculate average descent rate"""
+        if len(sequence) < 2:
+            return 0
+
+        descents = []
+        for i in range(1, len(sequence)):
+            if sequence[i] < sequence[i-1]:
+                descents.append((sequence[i-1] - sequence[i]) / sequence[i-1])
+
+        return np.mean(descents) if descents else 0
+
+    def calculate_entropy(self, sequence):
+        """Calculate Shannon entropy of sequence"""
+        if len(sequence) <= 1:
+            return 0
+
+        value_counts = pd.Series(sequence).value_counts()
+        probabilities = value_counts / len(sequence)
+        entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
+        return entropy
+
+    def extract_trajectory_features(self, sequence):
+        """Extract sophisticated trajectory characteristics"""
+        if len(sequence) <= 1:
+            return {}
+
+        features = {}
+
+        # Geometric features
+        features['max_peak_ratio'] = max(sequence) / sequence[0] if sequence[0] != 0 else 0
+        features['peak_position'] = sequence.index(max(sequence)) / len(sequence)
+        features['oscillation_frequency'] = self.count_oscillations(sequence)
+        features['descent_rate'] = self.calculate_descent_rate(sequence)
+
+        # Statistical features
+        features['trajectory_entropy'] = self.calculate_entropy(sequence)
+        features['variance_ratio'] = np.var(sequence) / (np.mean(sequence) + 1e-10)
+        features['skewness'] = stats.skew(sequence)
+        features['kurtosis'] = stats.kurtosis(sequence)
+
+        return features
+
+    def extract_arithmetic_features(self, n):
+        """Advanced number-theoretic feature extraction"""
+        features = {}
+
+        # Prime factorization properties
+        prime_factors = self.get_prime_factors(n)
+        features['largest_prime_factor'] = max(prime_factors) if prime_factors else 1
+        features['prime_factor_count'] = len(prime_factors)
+        features['unique_prime_factors'] = len(set(prime_factors))
+        features['is_prime_power'] = int(self.is_prime_power(n))
+
+        # p-adic valuations
+        for p in [2, 3, 5, 7, 11]:
+            features[f'p_adic_valuation_{p}'] = self.p_adic_valuation(n, p)
+
+        # Perfect power detection
+        features['is_perfect_square'] = int(int(np.sqrt(n))**2 == n)
+        features['is_perfect_cube'] = int(round(n**(1/3))**3 == n) # Use round to handle potential floating point issues
+
+        return features
+
+    def extract_features(self):
+        """Extract comprehensive features from numbers for pattern analysis"""
+        numbers = list(self.stopping_times.keys())
+        features = []
+
+        print("Extracting comprehensive features...")
+
+        # Create a list of column names for arithmetic and trajectory features
+        # to ensure consistency even if some trajectories are empty
+        arith_feature_names = sorted(self.extract_arithmetic_features(100).keys())  # Use a representative number
+        traj_feature_names = sorted(self.extract_trajectory_features([100]).keys()) # Use a representative sequence
+
+        for i, n in enumerate(numbers):
+            if i % 500 == 0:
+                print(f"Feature extraction progress: {i}/{len(numbers)}")
+
+            # Basic number properties
+            binary_len = len(bin(n)) - 2
+            trailing_zeros = (n & -n).bit_length() - 1 if n > 0 else 0 # Handle n=0 case
+            pop_count = bin(n).count('1')
+
+            # Divisibility features
+            div_by_3 = int(n % 3 == 0)
+            div_by_5 = int(n % 5 == 0)
+            div_by_7 = int(n % 7 == 0)
+
+            # Powers of 2
+            log2_n = np.log2(n) if n > 0 else 0 # Handle n=0 case
+            is_power_of_2 = int((n > 0) and ((n & (n - 1)) == 0)) # Handle n=0 case and check > 0
+
+            # Modular arithmetic features
+            mod_4 = n % 4
+            mod_8 = n % 8
+            mod_16 = n % 16
+
+            # Advanced features
+            largest_odd_divisor = n // (n & -n) if n > 0 else 0 # Handle n=0 case
+
+            # Arithmetic features
+            arith_features_dict = self.extract_arithmetic_features(n)
+            arith_feature_row = [arith_features_dict.get(key, 0) for key in arith_feature_names] # Ensure all keys are present
+
+            # Trajectory features
+            trajectory = self.trajectories.get(n, [n])
+            traj_features_dict = self.extract_trajectory_features(trajectory)
+            self.trajectory_features[n] = traj_features_dict
+            traj_feature_row = [traj_features_dict.get(key, 0) for key in traj_feature_names] # Ensure all keys are present
+
+
+            # Combine all features
+            feature_row = [n, binary_len, trailing_zeros, pop_count,
+                          div_by_3, div_by_5, div_by_7, log2_n, is_power_of_2,
+                          mod_4, mod_8, mod_16, largest_odd_divisor,
+                          self.stopping_times[n], self.max_values[n]]
+
+            # Add arithmetic features
+            feature_row.extend(arith_feature_row)
+
+            # Add trajectory features
+            feature_row.extend(traj_feature_row)
+
+            features.append(feature_row)
+
+        # Create column names
+        base_columns = [
+            'number', 'binary_length', 'trailing_zeros', 'popcount',
+            'div_by_3', 'div_by_5', 'div_by_7', 'log2_n', 'is_power_of_2',
+            'mod_4', 'mod_8', 'mod_16', 'largest_odd_divisor',
+            'stopping_time', 'max_value'
+        ]
+
+        # Get feature names from first number
+        # This is not needed anymore as we define feature names before the loop
+        # first_n = numbers[0]
+        # arith_features = sorted(self.extract_arithmetic_features(first_n).keys())
+        # traj_features = sorted(self.extract_trajectory_features(self.trajectories[first_n]).keys())
+
+        columns = base_columns + arith_feature_names + traj_feature_names # Use the predefined names
+
+        self.features_df = pd.DataFrame(features, columns=columns)
+        return self.features_df
+
+    def analyze_patterns(self):
+        """Analyze patterns in stopping times"""
+        print("\n" + "="*50)
+        print("BASIC PATTERN ANALYSIS")
+        print("="*50)
+
+        # Basic statistics
+        stopping_times_array = np.array(list(self.stopping_times.values()))
+
+        print(f"Mean stopping time: {np.mean(stopping_times_array):.2f}")
+        print(f"Std stopping time: {np.std(stopping_times_array):.2f}")
+        print(f"Max stopping time: {np.max(stopping_times_array)}")
+        print(f"Min stopping time: {np.min(stopping_times_array)}")
+
+        # Correlation analysis
+        if self.features_df is not None:
+            correlation_matrix = self.features_df.corr()
+
+            plt.figure(figsize=(20, 16))
+            mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
+            sns.heatmap(correlation_matrix, mask=mask, annot=False, cmap='coolwarm', center=0)
+            plt.title('Feature Correlation Matrix')
+            plt.tight_layout()
+            plt.show()
+
+            # Stopping time correlations
+            stopping_time_corr = correlation_matrix['stopping_time'].abs().sort_values(ascending=False)
+            print("\nTop 10 correlations with stopping time:")
+            for i, (feature, corr) in enumerate(stopping_time_corr.items()):
+                if feature != 'stopping_time' and i < 11:
+                    print(f"{feature}: {corr:.4f}")
+
+    def to_base(self, n, base):
+        """Convert number to given base (returns integer representation)"""
+        if n == 0:
+            return 0
+
+        result = 0
+        power = 0
+        while n > 0:
+            result += (n % base) * (10 ** power)
+            n //= base
+            power += 1
+        return result
+
+    def markov_chain_analysis(self, base=2, max_sequences=1000):
+        """Analyze Collatz sequences as Markov chains in different bases"""
+        print(f"\n" + "="*50)
+        print(f"MARKOV CHAIN ANALYSIS (BASE {base})")
+        print("="*50)
+
+        # Convert sequences to base representation
+        transitions = {}
+
+        trajectory_items = list(self.trajectories.items())[:max_sequences]
+
+        for n, sequence in trajectory_items:
+            if len(sequence) > 50:
+                sequence = sequence[:50]  # Limit sequence length
+
+            base_sequence = [self.to_base(x, base) for x in sequence]
+
+            for i in range(len(base_sequence) - 1):
+                current_state = base_sequence[i] % 100  # Limit state space
+                next_state = base_sequence[i + 1] % 100
+
+                if current_state not in transitions:
+                    transitions[current_state] = {}
+                if next_state not in transitions[current_state]:
+                    transitions[current_state][next_state] = 0
+
+                transitions[current_state][next_state] += 1
+
+        # Calculate transition probabilities
+        transition_probs = {}
+        for state in transitions:
+            total = sum(transitions[state].values())
+            transition_probs[state] = {next_state: count/total
+                                     for next_state, count in transitions[state].items()}
+
+        print(f"Number of observed states: {len(transition_probs)}")
+
+        # Find most common transitions
+        all_transitions = []
+        for state in transitions:
+            for next_state, count in transitions[state].items():
+                all_transitions.append((state, next_state, count))
+
+        all_transitions.sort(key=lambda x: x[2], reverse=True)
+        print("Top 10 most common transitions:")
+        for i, (state, next_state, count) in enumerate(all_transitions[:10]):
+            print(f"{i+1}. {state} -> {next_state}: {count} times")
+
+        return transition_probs
+
+    def fit_hidden_markov_model(self, max_trajectories=500):
+        """Fit HMM to discover latent states in Collatz trajectories"""
+        if not HMM_AVAILABLE:
+            print("HMM analysis skipped - hmmlearn not available")
+            return None
+
+        print(f"\n" + "="*50)
+        print("HIDDEN MARKOV MODEL ANALYSIS")
+        print("="*50)
+
+        # Prepare observation sequences
+        observations = []
+        lengths = []
+
+        trajectory_items = list(self.trajectories.items())[:max_trajectories]
+
+        for n, trajectory in trajectory_items:
+            if len(trajectory) < 2:
+                continue
+
+            obs_sequence = []
+            for i in range(len(trajectory) - 1):
+                current = trajectory[i]
+                next_val = trajectory[i + 1]
+
+                # Observable features: operation type, magnitude change
+                if current % 2 == 0:
+                    operation = 0  # Division by 2
+                    magnitude_change = np.log2(max(current / max(next_val, 1), 1e-10))
+                else:
+                    operation = 1  # 3n + 1
+                    magnitude_change = np.log2(max(next_val / max(current, 1), 1e-10))
+
+                obs_sequence.append([operation, magnitude_change])
+
+            if obs_sequence:
+                observations.extend(obs_sequence)
+                lengths.append(len(obs_sequence))
+
+        if not observations:
+            print("No valid observations for HMM")
+            return None
+
+        try:
+            # Fit HMM
+            model = hmm.GaussianHMM(n_components=5, covariance_type="full", random_state=42)
+            model.fit(np.array(observations), lengths)
+
+            print(f"HMM fitted with {model.n_components} states")
+            print(f"Log likelihood: {model.score(np.array(observations), lengths):.2f}")
+
+            return model
+        except Exception as e:
+            print(f"HMM fitting failed: {e}")
+            return None
+
+    def machine_learning_analysis(self):
+        """Apply machine learning to predict stopping times"""
+        print(f"\n" + "="*50)
+        print("MACHINE LEARNING ANALYSIS")
+        print("="*50)
+
+        if self.features_df is None:
+            print("No features extracted yet!")
+            return {}
+
+        # Prepare data
+        feature_cols = [col for col in self.features_df.columns
+                       if col not in ['stopping_time', 'max_value', 'number']]
+
+        # Handle any NaN values
+        self.features_df[feature_cols] = self.features_df[feature_cols].fillna(0)
+
+        X = self.features_df[feature_cols]
+        y = self.features_df['stopping_time']
+
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Models to test
+        models = {
+            'Linear Regression': LinearRegression(),
+            'Ridge Regression': Ridge(alpha=1.0),
+            'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42),
+            'Gradient Boosting': GradientBoostingRegressor(random_state=42, n_estimators=50),
+            'Huber Regressor': HuberRegressor(epsilon=1.35),
+        }
+
+        results = {}
+
+        for name, model in models.items():
+            print(f"\nTraining {name}...")
+            try:
+                # Train model
+                model.fit(X_train, y_train)
+
+                # Predict
+                y_pred = model.predict(X_test)
+
+                # Evaluate
+                mse = mean_squared_error(y_test, y_pred)
+                mae = mean_absolute_error(y_test, y_pred)
+                r2 = r2_score(y_test, y_pred)
+
+                # Cross-validation
+                cv_scores = cross_val_score(model, X, y, cv=3, scoring='r2')
+
+                results[name] = {
+                    'model': model,
+                    'MSE': mse,
+                    'MAE': mae,
+                    'R²': r2,
+                    'CV_R²_mean': cv_scores.mean(),
+                    'CV_R²_std': cv_scores.std()
+                }
+
+                print(f"  MSE: {mse:.4f}")
+                print(f"  MAE: {mae:.4f}")
+                print(f"  R²: {r2:.4f}")
+                print(f"  CV R² (mean ± std): {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+
+            except Exception as e:
+                print(f"  Error training {name}: {e}")
+                continue
+
+        # Feature importance for best model
+        if 'Random Forest' in results:
+            rf_model = results['Random Forest']['model']
+            feature_importance = pd.DataFrame({
+                'feature': feature_cols,
+                'importance': rf_model.feature_importances_
+            }).sort_values('importance', ascending=False)
+
+            print(f"\nTop 10 Feature Importance (Random Forest):")
+            for _, row in feature_importance.head(10).iterrows():
+                print(f"  {row['feature']}: {row['importance']:.4f}")
+
+        self.ml_results = results
+        return results
+
+    def discover_symbolic_patterns(self, max_samples=1000):
+        """Automated pattern discovery using genetic programming"""
+        if not GPLEARN_AVAILABLE:
+            print("Symbolic regression skipped - gplearn not available")
+            return None
+
+        print(f"\n" + "="*50)
+        print("SYMBOLIC PATTERN DISCOVERY")
+        print("="*50)
+
+        if self.features_df is None:
+            print("No features available for symbolic regression")
+            return None
+
+        # Select subset for symbolic regression (computationally intensive)
+        df_sample = self.features_df.sample(min(max_samples, len(self.features_df)), random_state=42)
+
+        # Select most important features based on correlation
+        feature_cols = ['binary_length', 'log2_n', 'popcount', 'trailing_zeros',
+                       'largest_odd_divisor', 'mod_4', 'mod_8']
+
+        # Ensure all selected features exist
+        available_features = [col for col in feature_cols if col in df_sample.columns]
+
+        if not available_features:
+            print("No suitable features available for symbolic regression")
+            return None
+
+        X = df_sample[available_features].fillna(0)
+        y = df_sample['stopping_time']
+
+        try:
+            print(f"Running symbolic regression on {len(X)} samples with {len(available_features)} features...")
+
+            symbolic_regressor = SymbolicRegressor(
+                population_size=1000,
+                generations=20,
+                tournament_size=20,
+                function_set=['add', 'sub', 'mul', 'div', 'log', 'sqrt'],
+                metric='mse',
+                parsimony_coefficient=0.01,
+                random_state=42,
+                verbose=1
+            )
+
+            symbolic_regressor.fit(X, y)
+
+            print(f"\nBest symbolic expression:")
+            print(f"R² = {symbolic_regressor.score(X, y):.4f}")
+            print(f"Expression: {symbolic_regressor._program}")
+
+            return symbolic_regressor
+
+        except Exception as e:
+            print(f"Symbolic regression failed: {e}")
+            return None
+
+    def information_theoretic_analysis(self):
+        """Quantify information content and dependencies"""
+        print(f"\n" + "="*50)
+        print("INFORMATION-THEORETIC ANALYSIS")
+        print("="*50)
+
+        if self.features_df is None:
+            print("No features available for information analysis")
+            return None, None
+
+        feature_cols = [col for col in self.features_df.columns
+                       if col not in ['stopping_time', 'max_value', 'number']]
+
+        # Select subset of features to avoid computational overload
+        numeric_features = []
+        for col in feature_cols[:15]:  # Limit to first 15 features
+            try:
+                self.features_df[col] = pd.to_numeric(self.features_df[col], errors='coerce')
+                if not self.features_df[col].isna().all():
+                    numeric_features.append(col)
+            except:
+                continue
+
+        if not numeric_features:
+            print("No suitable numeric features for information analysis")
+            return None, None
+
+        X = self.features_df[numeric_features].fillna(0)
+        y = self.features_df['stopping_time']
+
+        try:
+            # Mutual information with stopping time
+            mi_scores = mutual_info_regression(X, y, random_state=42)
+            mi_results = pd.DataFrame({
+                'feature': numeric_features,
+                'mutual_info': mi_scores
+            }).sort_values('mutual_info', ascending=False)
+
+            print("Top 10 Feature-Target Mutual Information:")
+            for _, row in mi_results.head(10).iterrows():
+                print(f"  {row['feature']}: {row['mutual_info']:.4f}")
+
+            return mi_results, None
+
+        except Exception as e:
+            print(f"Information analysis failed: {e}")
+            return None, None
+
+    def analyze_power_law(self):
+        """Analyze potential power law relationships"""
+        print(f"\n" + "="*50)
+        print("POWER LAW ANALYSIS")
+        print("="*50)
+
+        numbers = np.array(list(self.stopping_times.keys()))
+        stopping_times = np.array(list(self.stopping_times.values()))
+
+        # Remove zeros and ones for log transformation
+        mask = (numbers > 1) & (stopping_times > 0)
+        log_numbers = np.log(numbers[mask])
+        log_stopping_times = np.log(stopping_times[mask])
+
+        # Fit power law: stopping_time = a * n^b
+        slope, intercept, r_value, p_value, std_err = stats.linregress(log_numbers, log_stopping_times)
+
+        print(f"Power law fit: stopping_time ≈ {np.exp(intercept):.4f} * n^{slope:.4f}")
+        print(f"R² = {r_value**2:.4f}")
+        print(f"P-value = {p_value:.2e}")
+
+        # Test different functional forms
+        def power_func(x, a, b):
+            return a * np.power(x, b)
+
+        def log_func(x, a, b):
+            return a * np.log(x) + b
+
+        try:
+            # Power law fit
+            popt_power, pcov_power = curve_fit(power_func, numbers[mask], stopping_times[mask],
+                                             maxfev=5000)
+
+            # Logarithmic fit
+            popt_log, pcov_log = curve_fit(log_func, numbers[mask], stopping_times[mask])
+
+            print(f"\nCurve fitting results:")
+            print(f"Power law: a={popt_power[0]:.4f}, b={popt_power[1]:.4f}")
+            print(f"Logarithmic: a={popt_log[0]:.4f}, b={popt_log[1]:.4f}")
+
+        except Exception as e:
+            print(f"Curve fitting failed: {e}")
+
+    def find_invariant_patterns(self, max_n=None):
+        """Look for patterns that remain consistent across different ranges"""
+        print(f"\n" + "="*50)
+        print("INVARIANT PATTERN ANALYSIS")
+        print("="*50)
+
+        max_number = max_n or max(self.stopping_times.keys())
+        print(f"Analyzing patterns up to {max_number}...")
+
+        # Analyze patterns in different ranges
+        ranges = [(1, 1000), (1000, 5000), (5000, 10000)]
+        if max_number > 10000:
+            ranges.append((10000, min(20000, max_number)))
+        if max_number > 20000:
+            ranges.append((20000, max_number))
+
+        pattern_consistency = {}
+
+        for start, end in ranges:
+            range_data = {k: v for k, v in self.stopping_times.items()
+                         if start <= k < end}
+
+            if len(range_data) < 10:  # Need minimum data points
+                continue
+
+            # Pattern 1: Stopping time vs log(n)
+            numbers = list(range_data.keys())
+            stopping_times = list(range_data.values())
+            log_numbers = [np.log(n) for n in numbers]
+
+            slope, intercept, r_value, p_value, std_err = stats.linregress(log_numbers, stopping_times)
+
+            pattern_name = f"log_regression_{start}_{end}"
+            pattern_consistency[pattern_name] = {
+                'slope': slope,
+                'intercept': intercept,
+                'r_squared': r_value**2,
+                'p_value': p_value,
+                'n_points': len(numbers)
+            }
+
+            print(f"Range {start}-{end}: slope={slope:.4f}, R²={r_value**2:.4f}, n={len(numbers)}")
+
+        # Check consistency across ranges
+        log_slopes = [pattern_consistency[k]['slope'] for k in pattern_consistency
+                     if k.startswith('log_regression')]
+        log_r_squared = [pattern_consistency[k]['r_squared'] for k in pattern_consistency
+                        if k.startswith('log_regression')]
+
+        if log_slopes:
+            print(f"\nPattern Consistency Summary:")
+            print(f"Log regression slopes: {[f'{s:.4f}' for s in log_slopes]}")
+            print(f"Mean slope: {np.mean(log_slopes):.4f} ± {np.std(log_slopes):.4f}")
+            print(f"R² values: {[f'{r:.4f}' for r in log_r_squared]}")
+            print(f"Mean R²: {np.mean(log_r_squared):.4f}")
+
+            # Assess invariance
+            slope_cv = np.std(log_slopes) / np.mean(log_slopes) if np.mean(log_slopes) != 0 else float('inf')
+            print(f"Slope coefficient of variation: {slope_cv:.4f}")
+
+            if slope_cv < 0.1:
+                print("✓ Strong invariance detected in logarithmic relationship")
+            elif slope_cv < 0.3:
+                print("~ Moderate invariance in logarithmic relationship")
+            else:
+                print("✗ Weak invariance - pattern varies significantly across ranges")
+
+        self.pattern_consistency = pattern_consistency
+        return pattern_consistency
+
+    def cross_validation_analysis(self):
+        """Perform comprehensive cross-validation analysis"""
+        print(f"\n" + "="*50)
+        print("CROSS-VALIDATION ANALYSIS")
+        print("="*50)
+
+        if self.features_df is None or not self.ml_results:
+            print("No ML results available for cross-validation analysis")
+            return
+
+        feature_cols = [col for col in self.features_df.columns
+                       if col not in ['stopping_time', 'max_value', 'number']]
+
+        X = self.features_df[feature_cols].fillna(0)
+        y = self.features_df['stopping_time']
+
+        # Time-series cross-validation (train on smaller numbers, test on larger)
+        print("\nTime-Series Cross-Validation (by number size):")
+
+        # Sort by number value
+        sort_indices = np.argsort(self.features_df['number'])
+        X_sorted = X.iloc[sort_indices]
+        y_sorted = y.iloc[sort_indices]
+        numbers_sorted = self.features_df['number'].iloc[sort_indices]
+
+        tscv = TimeSeriesSplit(n_splits=3)
+
+        # Use best model from ML analysis
+        best_model_name = max(self.ml_results.keys(),
+                             key=lambda x: self.ml_results[x]['R²'])
+        best_model_class = type(self.ml_results[best_model_name]['model'])
+
+        cv_scores = []
+        for i, (train_idx, test_idx) in enumerate(tscv.split(X_sorted)):
+            X_train, X_test = X_sorted.iloc[train_idx], X_sorted.iloc[test_idx]
+            y_train, y_test = y_sorted.iloc[train_idx], y_sorted.iloc[test_idx]
+            numbers_train = numbers_sorted.iloc[train_idx]
+            numbers_test = numbers_sorted.iloc[test_idx]
+
+            model = best_model_class(random_state=42) if hasattr(best_model_class(), 'random_state') else best_model_class()
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            score = r2_score(y_test, y_pred)
+            cv_scores.append(score)
+
+            print(f"  Fold {i+1}: R² = {score:.4f}, "
+                  f"Train range: {numbers_train.min():.0f}-{numbers_train.max():.0f}, "
+                  f"Test range: {numbers_test.min():.0f}-{numbers_test.max():.0f}")
+
+        print(f"  Mean CV R²: {np.mean(cv_scores):.4f} ± {np.std(cv_scores):.4f}")
+
+    def robust_pattern_detection(self):
+        """Use robust methods to detect patterns resistant to outliers"""
+        print(f"\n" + "="*50)
+        print("ROBUST PATTERN DETECTION")
+        print("="*50)
+
+        if self.features_df is None:
+            print("No features available for robust analysis")
+            return {}, []
+
+        feature_cols = [col for col in self.features_df.columns
+                       if col not in ['stopping_time', 'max_value', 'number']]
+
+        X = self.features_df[feature_cols].fillna(0)
+        y = self.features_df['stopping_time']
+
+        # Robust regression models
+        models = {
+            'Huber': HuberRegressor(epsilon=1.35),
+            'RANSAC': RANSACRegressor(random_state=42),
+        }
+
+        # Add QuantileRegressor if available
+        try:
+            models['Quantile_50'] = QuantileRegressor(quantile=0.5)
+        except:
+            print("QuantileRegressor not available")
+
+        results = {}
+
+        for name, model in models.items():
+            try:
+                model.fit(X, y)
+                y_pred = model.predict(X)
+
+                results[name] = {
+                    'model': model,
+                    'predictions': y_pred,
+                    'mae': mean_absolute_error(y, y_pred),
+                    'r2': r2_score(y, y_pred)
+                }
+
+                print(f"{name}: MAE={mean_absolute_error(y, y_pred):.4f}, R²={r2_score(y, y_pred):.4f}")
+
+            except Exception as e:
+                print(f"Failed to fit {name}: {e}")
+
+        # Outlier detection
+        print(f"\nOutlier Detection:")
+        try:
+            isolation_forest = IsolationForest(contamination=0.1, random_state=42)
+            outlier_labels = isolation_forest.fit_predict(X)
+            outlier_indices = np.where(outlier_labels == -1)[0]
+
+            print(f"Detected {len(outlier_indices)} outliers ({len(outlier_indices)/len(X)*100:.1f}%)")
+
+            # Analyze outlier characteristics
+            if len(outlier_indices) > 0:
+                outlier_numbers = self.features_df.iloc[outlier_indices]['number']
+                outlier_stopping_times = self.features_df.iloc[outlier_indices]['stopping_time']
+
+                print(f"Outlier number range: {outlier_numbers.min():.0f} - {outlier_numbers.max():.0f}")
+                print(f"Outlier stopping time range: {outlier_stopping_times.min():.0f} - {outlier_stopping_times.max():.0f}")
+
+        except Exception as e:
+            print(f"Outlier detection failed: {e}")
+            outlier_indices = []
+
+        return results, outlier_indices
+
+    def topological_data_analysis(self, max_trajectories=500):
+        """Apply topological data analysis to trajectory space"""
+        if not TOPOLOGY_AVAILABLE:
+            print("Topological analysis skipped - ripser/persim not available")
+            return None, None
+
+        print(f"\n" + "="*50)
+        print("TOPOLOGICAL DATA ANALYSIS")
+        print("="*50)
+
+        # Convert trajectories to fixed-length feature vectors
+        max_length = 50  # Reduced for computational efficiency
+        trajectory_matrix = []
+
+        trajectory_items = list(self.trajectories.items())[:max_trajectories]
+
+        for n, trajectory in trajectory_items:
+            # Pad or truncate trajectory
+            if len(trajectory) > max_length:
+                padded = trajectory[:max_length]
+            else:
+                padded = trajectory + [1] * (max_length - len(trajectory))
+
+            # Log-transform to handle large values
+            padded = [np.log(max(x, 1)) for x in padded]
+            trajectory_matrix.append(padded)
+
+        if not trajectory_matrix:
+            print("No trajectories available for topological analysis")
+            return None, None
+
+        trajectory_matrix = np.array(trajectory_matrix)
+
+        try:
+            print(f"Computing persistent homology for {len(trajectory_matrix)} trajectories...")
+
+            # Compute persistent homology
+            diagrams = ripser.ripser(trajectory_matrix, maxdim=1)['dgms']
+
+            # Extract topological features
+            persistence_features = self.extract_persistence_features(diagrams)
+
+            print("Topological features extracted:")
+            for feature, value in persistence_features.items():
+                print(f"  {feature}: {value:.4f}")
+
+            return diagrams, persistence_features
+
+        except Exception as e:
+            print(f"Topological analysis failed: {e}")
+            return None, None
+
+    def extract_persistence_features(self, diagrams):
+        """Extract numerical features from persistence diagrams"""
+        features = {}
+
+        for dim, diagram in enumerate(diagrams):
+            if len(diagram) > 0:
+                births = diagram[:, 0]
+                deaths = diagram[:, 1]
+                # Handle infinite deaths
+                finite_mask = ~np.isinf(deaths)
+                if np.any(finite_mask):
+                    births_finite = births[finite_mask]
+                    deaths_finite = deaths[finite_mask]
+                    lifetimes = deaths_finite - births_finite
+
+                    features[f'dim_{dim}_total_persistence'] = np.sum(lifetimes)
+                    features[f'dim_{dim}_max_lifetime'] = np.max(lifetimes)
+                    features[f'dim_{dim}_num_features'] = len(diagram)
+                    features[f'dim_{dim}_mean_birth'] = np.mean(births_finite)
+                    features[f'dim_{dim}_mean_death'] = np.mean(deaths_finite)
+                else:
+                    # All deaths are infinite
+                    features[f'dim_{dim}_total_persistence'] = 0
+                    features[f'dim_{dim}_max_lifetime'] = 0
+                    features[f'dim_{dim}_num_features'] = len(diagram)
+                    features[f'dim_{dim}_mean_birth'] = np.mean(births) if len(births) > 0 else 0
+                    features[f'dim_{dim}_mean_death'] = 0
+
+        return features
+
+    def entropy_analysis(self):
+        """Analyze entropy properties of trajectories"""
+        print(f"\n" + "="*50)
+        print("ENTROPY ANALYSIS")
+        print("="*50)
+
+        trajectory_entropies = []
+
+        for n, trajectory in self.trajectories.items():
+            if len(trajectory) > 1:
+                # Shannon entropy of trajectory values (binned)
+                trajectory_log = [np.log(max(x, 1)) for x in trajectory]
+
+                # Bin the values to calculate entropy
+                hist, _ = np.histogram(trajectory_log, bins=min(10, len(trajectory)))
+                hist = hist[hist > 0]  # Remove zero bins
+
+                if len(hist) > 0:
+                    probabilities = hist / np.sum(hist)
+                    entropy = -np.sum(probabilities * np.log2(probabilities))
+                    trajectory_entropies.append(entropy)
+
+        if trajectory_entropies:
+            print(f"Mean trajectory entropy: {np.mean(trajectory_entropies):.4f}")
+            print(f"Entropy std: {np.std(trajectory_entropies):.4f}")
+            print(f"Entropy range: {np.min(trajectory_entropies):.4f} - {np.max(trajectory_entropies):.4f}")
+
+            # Correlation with stopping times
+            if len(trajectory_entropies) == len(self.stopping_times):
+                stopping_times_list = [self.stopping_times[n] for n in sorted(self.stopping_times.keys())[:len(trajectory_entropies)]]
+                correlation = np.corrcoef(trajectory_entropies, stopping_times_list)[0, 1]
+                print(f"Entropy-stopping time correlation: {correlation:.4f}")
+
+        return trajectory_entropies
+
+    def visualize_results(self):
+        """Create comprehensive visualizations of the analysis"""
+        print(f"\n" + "="*50)
+        print("GENERATING VISUALIZATIONS")
+        print("="*50)
+
+        if not self.stopping_times:
+            print("No data to visualize!")
+            return
+
+        # Create comprehensive visualization
+        fig = plt.figure(figsize=(20, 15))
+
+        numbers = np.array(list(self.stopping_times.keys()))
+        stopping_times = np.array(list(self.stopping_times.values()))
+
+        # Plot 1: Stopping times vs number
+        ax1 = plt.subplot(3, 3, 1)
+        plt.scatter(numbers, stopping_times, alpha=0.6, s=1, c='blue')
+        plt.xlabel('Number')
+        plt.ylabel('Stopping Time')
+        plt.title('Collatz Stopping Times')
+        plt.grid(True, alpha=0.3)
+
+        # Plot 2: Log-log plot
+        ax2 = plt.subplot(3, 3, 2)
+        plt.loglog(numbers, stopping_times, '.', alpha=0.6, markersize=1, c='red')
+        plt.xlabel('Number (log scale)')
+        plt.ylabel('Stopping Time (log scale)')
+        plt.title('Log-Log Plot of Stopping Times')
+        plt.grid(True, alpha=0.3)
+
+        # Plot 3: Distribution of stopping times
+        ax3 = plt.subplot(3, 3, 3)
+        plt.hist(stopping_times, bins=50, alpha=0.7, edgecolor='black', color='green')
+        plt.xlabel('Stopping Time')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of Stopping Times')
+        plt.grid(True, alpha=0.3)
+
+        # Plot 4: Stopping time vs binary length
+        if self.features_df is not None:
+            ax4 = plt.subplot(3, 3, 4)
+            if 'binary_length' in self.features_df.columns:
+                binary_avg = self.features_df.groupby('binary_length')['stopping_time'].agg(['mean', 'std']).reset_index()
+                plt.errorbar(binary_avg['binary_length'], binary_avg['mean'],
+                           yerr=binary_avg['std'], fmt='o-', capsize=5, color='purple')
+                plt.xlabel('Binary Length')
+                plt.ylabel('Average Stopping Time')
+                plt.title('Stopping Time vs Binary Length')
+                plt.grid(True, alpha=0.3)
+
+        # Plot 5: Max values vs stopping times
+        ax5 = plt.subplot(3, 3, 5)
+        max_vals = np.array(list(self.max_values.values()))
+        plt.scatter(stopping_times, max_vals, alpha=0.6, s=1, c='orange')
+        plt.xlabel('Stopping Time')
+        plt.ylabel('Maximum Value in Trajectory')
+        plt.title('Max Value vs Stopping Time')
+        plt.yscale('log')
+        plt.grid(True, alpha=0.3)
+
+        # Plot 6: Residuals from power law fit
+        ax6 = plt.subplot(3, 3, 6)
+        mask = (numbers > 1) & (stopping_times > 0)
+        log_numbers = np.log(numbers[mask])
+        log_stopping_times = np.log(stopping_times[mask])
+
+        # Fit power law
+        slope, intercept, r_value, p_value, std_err = stats.linregress(log_numbers, log_stopping_times)
+        predicted_log = slope * log_numbers + intercept
+        residuals = log_stopping_times - predicted_log
+
+        plt.scatter(log_numbers, residuals, alpha=0.6, s=1, c='brown')
+        plt.axhline(y=0, color='red', linestyle='--', alpha=0.7)
+        plt.xlabel('Log(Number)')
+        plt.ylabel('Residuals from Power Law')
+        plt.title(f'Power Law Residuals (R² = {r_value**2:.3f})')
+        plt.grid(True, alpha=0.3)
+
+        # Plot 7: Feature correlation heatmap (top features)
+        if self.features_df is not None:
+            ax7 = plt.subplot(3, 3, 7)
+            # Select top correlated features with stopping time
+            corr_matrix = self.features_df.corr()
+            if 'stopping_time' in corr_matrix.columns:
+                top_features = corr_matrix['stopping_time'].abs().nlargest(8).index.tolist()
+                top_features = [f for f in top_features if f != 'stopping_time'][:6]
+
+                if top_features:
+                    top_corr = self.features_df[top_features + ['stopping_time']].corr()
+                    sns.heatmap(top_corr, annot=True, cmap='coolwarm', center=0,
+                               square=True, fmt='.3f')
+                    plt.title('Top Feature Correlations')
+
+        # Plot 8: ML Model Performance Comparison
+        if self.ml_results:
+            ax8 = plt.subplot(3, 3, 8)
+            model_names = list(self.ml_results.keys())
+            r2_scores = [self.ml_results[name]['R²'] for name in model_names]
+
+            bars = plt.bar(model_names, r2_scores, color='lightblue', edgecolor='black')
+            plt.xlabel('Model')
+            plt.ylabel('R² Score')
+            plt.title('ML Model Performance')
+            plt.xticks(rotation=45, ha='right')
+            plt.grid(True, alpha=0.3, axis='y')
+
+            # Add value labels on bars
+            for bar, score in zip(bars, r2_scores):
+                plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                        f'{score:.3f}', ha='center', va='bottom', fontsize=8)
+
+        # Plot 9: Pattern Invariance Across Ranges
+        if self.pattern_consistency:
+            ax9 = plt.subplot(3, 3, 9)
+            log_patterns = {k: v for k, v in self.pattern_consistency.items()
+                           if k.startswith('log_regression')}
+
+            if log_patterns:
+                ranges = []
+                slopes = []
+                r_squared = []
+
+                for pattern_name, data in log_patterns.items():
+                    # Extract range from pattern name
+                    parts = pattern_name.split('_')
+                    if len(parts) >= 4:
+                        start_range = int(parts[2])
+                        ranges.append(start_range)
+                        slopes.append(data['slope'])
+                        r_squared.append(data['r_squared'])
+
+                if ranges:
+                    ax9_twin = ax9.twinx()
+
+                    line1 = ax9.plot(ranges, slopes, 'o-', color='blue', label='Slope')
+                    line2 = ax9_twin.plot(ranges, r_squared, 's-', color='red', label='R²')
+
+                    ax9.set_xlabel('Range Start')
+                    ax9.set_ylabel('Slope', color='blue')
+                    ax9_twin.set_ylabel('R²', color='red')
+                    ax9.set_title('Pattern Invariance Across Ranges')
+                    ax9.grid(True, alpha=0.3)
+
+                    # Combined legend
+                    lines1, labels1 = ax9.get_legend_handles_labels()
+                    lines2, labels2 = ax9_twin.get_legend_handles_labels()
+                    ax9.legend(lines1 + lines2, labels1 + labels2, loc='best')
+
+        plt.tight_layout()
+        plt.show()
+
+        # Additional trajectory visualization
+        self.visualize_sample_trajectories()
+
+    def visualize_sample_trajectories(self, n_samples=10):
+        """Visualize sample Collatz trajectories"""
+        print("Plotting sample trajectories...")
+
+        plt.figure(figsize=(15, 10))
+
+        # Select diverse trajectories for visualization
+        stopping_times_list = list(self.stopping_times.values())
+
+        # Get trajectories with different stopping times
+        percentiles = [10, 25, 50, 75, 90]
+        selected_numbers = []
+
+        for p in percentiles:
+            target_time = np.percentile(stopping_times_list, p)
+            # Find number closest to this stopping time
+            closest_num = min(self.stopping_times.keys(),
+                            key=lambda x: abs(self.stopping_times[x] - target_time))
+            selected_numbers.append(closest_num)
+
+        # Add some additional interesting cases
+        if len(selected_numbers) < n_samples:
+            remaining = n_samples - len(selected_numbers)
+            other_numbers = [n for n in self.stopping_times.keys() if n not in selected_numbers]
+            selected_numbers.extend(np.random.choice(other_numbers,
+                                                   min(remaining, len(other_numbers)),
+                                                   replace=False))
+
+        colors = plt.cm.tab10(np.linspace(0, 1, len(selected_numbers)))
+
+        for i, n in enumerate(selected_numbers[:n_samples]):
+            trajectory = self.trajectories[n]
+            stopping_time = self.stopping_times[n]
+
+            plt.plot(range(len(trajectory)), trajectory, 'o-',
+                    color=colors[i], alpha=0.7, linewidth=1, markersize=2,
+                    label=f'n={n} (steps={stopping_time})')
+
+        plt.xlabel('Step')
+        plt.ylabel('Value')
+        plt.title(f'Sample Collatz Trajectories')
+        plt.yscale('log')
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.show()
+
+    def research_recommendations(self):
+        """Provide comprehensive research recommendations"""
+        print("\n" + "="*80)
+        print("COMPREHENSIVE RESEARCH RECOMMENDATIONS FOR IMPROVED ACCURACY")
+        print("="*80)
+
+        recommendations = [
+            "\n1. COMPUTATIONAL SCALING & INFRASTRUCTURE:",
+            "   • Extend analysis to n > 10^8 using distributed computing frameworks (Dask, Ray)",
+            "   • Implement GPU acceleration with CUDA/OpenCL for parallel trajectory computation",
+            "   • Use Apache Spark for large-scale data processing and feature extraction",
+            "   • Implement incremental learning to handle streaming data efficiently",
+            "   • Set up cloud computing resources for massive parallel processing",
+            "",
+            "2. ADVANCED FEATURE ENGINEERING:",
+            "   • Extract trajectory shape features: curvature, turning points, acceleration",
+            "   • Implement p-adic analysis across multiple prime bases simultaneously",
+            "   • Add continued fraction convergent properties and periodic patterns",
+            "   • Include arithmetic progression membership and density features",
+            "   • Develop graph-theoretic features modeling number relationships",
+            "   • Extract spectral features from trajectory Fourier transforms",
+            "",
+            "3. SOPHISTICATED MACHINE LEARNING:",
+            "   • Deep neural networks with attention mechanisms for sequence modeling",
+            "   • Transformer architectures pre-trained on mathematical sequences",
+            "   • Graph Neural Networks modeling the Collatz graph structure",
+            "   • Reinforcement learning to discover optimal prediction strategies",
+            "   • Ensemble methods combining 10+ diverse base predictors",
+            "   • Meta-learning approaches for few-shot prediction of rare patterns",
+            "",
+            "4. MATHEMATICAL PATTERN DISCOVERY:",
+            "   • Automated theorem proving systems for pattern verification",
+            "   • Symbolic regression with constraints from number theory",
+            "   • Topological data analysis with multi-scale persistent homology",
+            "   • Information-theoretic measures: mutual information, transfer entropy",
+            "   • Dynamical systems analysis: Lyapunov exponents, fractal dimensions",
+            "   • Connection analysis to other famous sequences (Fibonacci, primes, etc.)",
+            "",
+            "5. ADVANCED VALIDATION FRAMEWORKS:",
+            "   • Multi-scale cross-validation: test patterns across 5+ orders of magnitude",
+            "   • Bayesian model selection with proper prior specification",
+            "   • Bootstrap confidence intervals with bias correction",
+            "   • Permutation tests for statistical significance of discovered patterns",
+            "   • Out-of-distribution testing on numbers with special properties",
+            "   • Temporal validation: train on historical computations, test on new ranges",
+            "",
+            "6. THEORETICAL INTEGRATION:",
+            "   • Incorporate known bounds: Terras' theorem, Krasikov-Lagarias bounds",
+            "   • Connect to analytic number theory: L-functions, zeta functions",
+            "   • Study connections to random walk theory and Brownian motion",
+            "   • Investigate relationships with other unsolved problems (twin primes, etc.)",
+            "   • Apply techniques from algebraic number theory and Diophantine analysis",
+            "",
+            "7. SPECIALIZED ALGORITHMS:",
+            "   • Variable-length Markov chains with context-sensitive state spaces",
+            "   • Hidden Markov models with infinite state spaces using Dirichlet processes",
+            "   • Recurrent neural networks with external memory mechanisms",
+            "   • Attention-based sequence-to-sequence models for trajectory prediction",
+            "   • Gaussian processes with specialized kernels for number-theoretic functions",
+            "",
+            "8. INVARIANCE & UNIVERSALITY:",
+            "   • Test scale invariance using renormalization group techniques",
+            "   • Search for universal scaling laws independent of starting conditions",
+            "   • Investigate modular arithmetic patterns across different bases",
+            "   • Study geometric properties invariant under Collatz transformations",
+            "   • Look for connections to universality classes in statistical mechanics",
+            ""
+        ]
+
+        for rec in recommendations:
+            print(rec)
+
+        print("\n" + "="*80)
+        print("EXPECTED OUTCOMES & SUCCESS METRICS")
+        print("="*80)
+
+        outcomes = [
+            "\nQUANTITATIVE TARGETS:",
+            f"• Prediction Accuracy: Target R² > 0.8 for stopping time prediction",
+            f"• Pattern Consistency: >99% invariance across ranges 10^6 to 10^12",
+            f"• Computational Efficiency: Process 10^9 numbers in <24 hours",
+            f"• Feature Stability: Top 10 features maintain >90% ranking stability",
+            f"• Cross-validation: <5% variance in performance across different ranges",
+            "",
+            "QUALITATIVE BREAKTHROUGHS:",
+            "• Discovery of previously unknown mathematical relationships",
+            "• Identification of number classes with provably bounded stopping times",
+            "• Connection to other areas of mathematics (algebraic geometry, etc.)",
+            "• Development of new computational methods applicable to other problems",
+            "• Theoretical insights leading to progress on the conjecture proof",
+            "",
+            "RESEARCH IMPACT:",
+            "• Publications in top-tier mathematics and computer science journals",
+            "• Open-source software tools for mathematical sequence analysis",
+            "• Educational resources for computational number theory",
+            "• Inspiration for new research directions in algorithmic mathematics",
+        ]
+
+        for outcome in outcomes:
+            print(outcome)
+
+        print("\n" + "="*80)
+
+    def run_comprehensive_analysis(self, start=1, end=5000, step=1):
+        """Run the complete analysis pipeline"""
+        print("="*80)
+        print("COMPREHENSIVE COLLATZ CONJECTURE ANALYSIS")
+        print("="*80)
+        print(f"Analysis range: {start} to {end} (step: {step})")
+        print(f"Total numbers to analyze: {len(range(start, end + 1, step))}")
+
+        # 1. Generate data
+        self.generate_data(start, end, step)
+
+        # 2. Extract features
+        self.extract_features()
+
+        # 3. Basic pattern analysis
+        self.analyze_patterns()
+
+        # 4. Markov chain analysis
+        self.markov_chain_analysis(base=2)
+        self.markov_chain_analysis(base=3)
+
+        # 5. Hidden Markov Model analysis
+        self.fit_hidden_markov_model()
+
+        # 6. Machine learning analysis
+        self.machine_learning_analysis()
+
+        # 7. Cross-validation analysis
+        self.cross_validation_analysis()
+
+        # 8. Power law analysis
+        self.analyze_power_law()
+
+        # 9. Invariant pattern detection
+        self.find_invariant_patterns()
+
+        # 10. Robust pattern detection
+        self.robust_pattern_detection()
+
+        # 11. Symbolic pattern discovery
+        self.discover_symbolic_patterns()
+
+        # 12. Information-theoretic analysis
+        self.information_theoretic_analysis()
+
+        # 13. Topological data analysis
+        self.topological_data_analysis()
+
+        # 14. Entropy analysis
+        self.entropy_analysis()
+
+        # 15. Comprehensive visualizations
+        self.visualize_results()
+
+        # 16. Research recommendations
+        self.research_recommendations()
+
+        print("\n" + "="*80)
+        print("ANALYSIS COMPLETE")
+        print("="*80)
+
+        return self
+
+
+# Main execution function
+def main():
+    """Execute the comprehensive Collatz analysis"""
+    print("Initializing Advanced Collatz Conjecture Analyzer...")
+
+    # Create analyzer instance
+    analyzer = AdvancedCollatzAnalyzer()
+
+    # Run comprehensive analysis
+    # Note: Start with smaller range for demonstration, increase as needed
+    analyzer.run_comprehensive_analysis(start=1, end=3000, step=1)
+
+    return analyzer
+
+
+# Execute the analysis
+if __name__ == "__main__":
+    # Run the complete analysis
+    analyzer = main()
+
+    # Optional: Save results for later analysis
+    print("\nSaving analysis results...")
+
+    # Create summary report
+    summary = {
+        'total_numbers_analyzed': len(analyzer.stopping_times),
+        'max_stopping_time': max(analyzer.stopping_times.values()) if analyzer.stopping_times else 0,
+        'mean_stopping_time': np.mean(list(analyzer.stopping_times.values())) if analyzer.stopping_times else 0,
+        'ml_best_r2': max([results['R²'] for results in analyzer.ml_results.values()]) if analyzer.ml_results else 0,
+        'pattern_consistency_score': len(analyzer.pattern_consistency) if analyzer.pattern_consistency else 0
+    }
+
+    print("\nFINAL SUMMARY:")
+    print("="*50)
+    for key, value in summary.items():
+        print(f"{key.replace('_', ' ').title()}: {value}")
+
+    print(f"\nAnalysis completed successfully!")
+    print(f"Results stored in 'analyzer' object for further investigation.")

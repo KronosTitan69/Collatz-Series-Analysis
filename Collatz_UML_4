@@ -1,0 +1,373 @@
+import numpy as np
+
+def collatz_stopping_time(n):
+    steps = 0
+    while n != 1:
+        if n % 2 == 0:
+            n = n // 2
+        else:
+            n = 3 * n + 1
+        steps += 1
+    return steps
+
+# Compute stopping times for first 5000 natural numbers
+stopping_times = {}
+for i in range(1, 5001):
+    t = collatz_stopping_time(i)
+    if t not in stopping_times:
+        stopping_times[t] = []
+    stopping_times[t].append(i)
+
+# Print grouped results
+#for t in sorted(stopping_times):
+    #print(f"Stopping time {t}: {len(stopping_times[t])} numbers")
+import matplotlib.pyplot as plt
+
+# Parity analysis
+for t, numbers in stopping_times.items():
+    evens = [n for n in numbers if n % 2 == 0]
+    odds = [n for n in numbers if n % 2 == 1]
+    #print(f"Stopping time {t}: {len(evens)} evens, {len(odds)} odds")
+
+# Distribution plot
+times = [t for t in stopping_times for _ in stopping_times[t]]
+plt.hist(times, bins=max(times)-min(times)+1)
+plt.xlabel('Stopping Time')
+plt.ylabel('Number Count')
+plt.title('Distribution of Collatz Stopping Times (1-5000)')
+plt.show()
+
+# Modulo pattern (example: modulo 3)
+for t, numbers in stopping_times.items():
+    mods = [n % 3 for n in numbers]
+    #print(f"Stopping time {t}: mod 3 counts: {[mods.count(k) for k in range(3)]}")
+import matplotlib.pyplot as plt
+
+def collatz_stopping_time(n):
+    steps = 0
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        steps += 1
+    return steps
+
+# Group numbers by stopping time
+stopping_times = {}
+for i in range(1, 5001):
+    t = collatz_stopping_time(i)
+    stopping_times.setdefault(t, []).append(i)
+
+# Count odds and evens in each group
+labels = []
+odds = []
+evens = []
+
+for t in sorted(stopping_times):
+    numbers = stopping_times[t]
+    odds_count = sum(1 for n in numbers if n % 2 == 1)
+    evens_count = sum(1 for n in numbers if n % 2 == 0)
+    labels.append(t)
+    odds.append(odds_count)
+    evens.append(evens_count)
+
+# Plotting
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.bar(labels, odds, label='Odd', color='orange')
+ax.bar(labels, evens, bottom=odds, label='Even', color='blue', alpha=0.7)
+ax.set_xlabel('Collatz Stopping Time')
+ax.set_ylabel('Count')
+ax.set_title('Number of Odd and Even Numbers for Each Collatz Stopping Time Group (1–5000)')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+import numpy as np
+
+def collatz_features(n):
+    if n == 1:
+        return {
+            "start": 1,
+            "stopping_time": 0,
+            "parity": 1 % 2,
+            "mod3": 1 % 3,
+            "mod4": 1 % 4,
+            "mod5": 1 % 5,
+            "mod6": 1 % 6,
+            "log_start": np.log(1),
+            "max_val": 1,
+            "odd_steps": 0,
+            "even_steps": 0,
+            "odd_even_ratio": 0, # Or some small epsilon for division by zero
+        }
+    steps = 0
+    max_val = n
+    odd_steps = 0
+    even_steps = 0
+    seq = []
+    current = n
+    while current != 1:
+        seq.append(current)
+        if current % 2 == 0:
+            current //= 2
+            even_steps += 1
+        else:
+            current = 3 * current + 1
+            odd_steps += 1
+        max_val = max(max_val, current)
+        steps += 1
+    return {
+        "start": seq[0],
+        "stopping_time": steps,
+        "parity": seq[0] % 2,
+        "mod3": seq[0] % 3,
+        "mod4": seq[0] % 4,
+        "mod5": seq[0] % 5,
+        "mod6": seq[0] % 6,
+        "log_start": np.log(seq[0]),
+        "max_val": max_val,
+        "odd_steps": odd_steps,
+        "even_steps": even_steps,
+        "odd_even_ratio": odd_steps / (even_steps + 1e-9),
+    }
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+
+features = [collatz_features(i) for i in range(1, 5001)]
+X = np.array([[f['start'], f['parity'], f['mod3'], f['mod4'], f['mod5'], f['log_start'], f['max_val'], f['odd_steps'], f['even_steps'], f['odd_even_ratio']] for f in features])
+
+kmeans = KMeans(n_clusters=10, random_state=0).fit(X)
+labels = kmeans.labels_
+
+plt.scatter([f['start'] for f in features], [f['stopping_time'] for f in features], c=labels, cmap='tab10')
+plt.xlabel('Starting Value')
+plt.ylabel('Stopping Time')
+plt.title('KMeans Clusters of Collatz Features')
+plt.show()
+
+from sklearn.ensemble import RandomForestClassifier
+
+y = [f['stopping_time'] for f in features]
+X = np.array([[f['parity'], f['mod3'], f['mod4'], f['mod5'], f['log_start'], f['max_val'], f['odd_steps'], f['even_steps'], f['odd_even_ratio']] for f in features])
+
+clf = RandomForestClassifier(n_estimators=100)
+clf.fit(X, y)
+importances = clf.feature_importances_
+
+for f, imp in zip(['parity', 'mod3', 'mod4', 'mod5', 'log_start', 'max_val', 'odd_steps', 'even_steps', 'odd_even_ratio'], importances):
+    print(f'{f}: {imp:.3f}')
+
+import numpy as np
+
+# Count transitions (odd/even)
+transitions = np.zeros((2, 2))  # 0=even, 1=odd
+
+for i in range(1, 5001):
+    n = i
+    prev_parity = n % 2
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        new_parity = n % 2
+        transitions[prev_parity, new_parity] += 1
+        prev_parity = new_parity
+
+# Normalize to get transition probabilities
+P = transitions / transitions.sum(axis=1, keepdims=True)
+print("Transition matrix (parity):\n", P)
+
+import numpy as np
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+from collections import defaultdict
+
+def collatz_stopping_time(n):
+    steps = 0
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        steps += 1
+    return steps
+
+def collatz_features(n):
+    return [
+        n % 2,             # parity
+        n % 3,
+        n % 4,
+        n % 5,
+        n % 6,
+        np.log(n),
+    ]
+
+# 1. Group by stopping time
+groups = defaultdict(list)
+for i in range(1, 5001):
+    t = collatz_stopping_time(i)
+    groups[t].append(i)
+
+# 2. Analysis per group
+for t, numbers in groups.items():
+    print(f"\nStopping time: {t} (Count: {len(numbers)})")
+    # Feature matrix
+    X = np.array([collatz_features(n) for n in numbers])
+    # Parity & mod breakdown
+    parity = [n % 2 for n in numbers]
+    mod3 = [n % 3 for n in numbers]
+    print(f"  Odd: {parity.count(1)}, Even: {parity.count(0)}")
+    print(f"  mod3 breakdown: {[mod3.count(m) for m in range(3)]}")
+    # Clustering (if enough numbers)
+    if len(numbers) >= 10:
+        k = min(3, len(numbers))
+        kmeans = KMeans(n_clusters=k, random_state=0).fit(X)
+        print(f"  KMeans cluster counts: {np.bincount(kmeans.labels_)}")
+        # Visualization (optional, for selected t)
+        if t in [max(groups.keys()), min(groups.keys())]:
+            plt.scatter(X[:, 5], X[:, 0], c=kmeans.labels_, cmap='tab10')
+            plt.title(f'Stopping time {t}, clusters')
+            plt.xlabel('log(n)')
+            plt.ylabel('Parity')
+            plt.show()
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from collections import defaultdict
+from sklearn.cluster import KMeans
+
+def collatz_stopping_time(n):
+    steps = 0
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        steps += 1
+    return steps
+
+def collatz_features(n):
+    return [
+        n % 2,  # parity
+        n % 3,
+        n % 4,
+        n % 5,
+        n % 6,
+        np.log(n),
+    ]
+
+def collatz_sequence(n):
+    seq = []
+    while n != 1:
+        seq.append(n)
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+    seq.append(1)
+    return seq
+
+# 1. Group by stopping time
+groups = defaultdict(list)
+for i in range(1, 5001):
+    t = collatz_stopping_time(i)
+    groups[t].append(i)
+
+sorted_times = sorted(groups.keys())
+max_time = max(sorted_times)
+min_time = min(sorted_times)
+
+# Prepare containers for consolidated visualizations
+parity_ratios = []
+mod3_ratios = []
+mod4_ratios = []
+mod5_ratios = []
+mod6_ratios = []
+group_sizes = []
+cluster_counts_dict = {}
+markov_matrices = []
+
+for t in sorted_times:
+    numbers = groups[t]
+    features = np.array([collatz_features(n) for n in numbers])
+    parity = features[:,0]
+    mod3 = features[:,1]
+    mod4 = features[:,2]
+    mod5 = features[:,3]
+    mod6 = features[:,4]
+
+    odd_count = np.sum(parity == 1)
+    even_count = np.sum(parity == 0)
+    parity_ratios.append([odd_count, even_count])
+    mod3_ratios.append([np.sum(mod3 == m) for m in range(3)])
+    mod4_ratios.append([np.sum(mod4 == m) for m in range(4)])
+    mod5_ratios.append([np.sum(mod5 == m) for m in range(5)])
+    mod6_ratios.append([np.sum(mod6 == m) for m in range(6)])
+    group_sizes.append(len(numbers))
+
+    # Clustering
+    if len(numbers) >= 10:
+        k = min(3, len(numbers))
+        kmeans = KMeans(n_clusters=k, n_init=10, random_state=0).fit(features)
+        cluster_counts = np.bincount(kmeans.labels_)
+        cluster_counts_dict[t] = cluster_counts
+
+    # Markov parity transitions
+    transitions = np.zeros((2,2)) # [from_parity, to_parity]
+    for n in numbers:
+        seq = collatz_sequence(n)
+        for i in range(len(seq)-1):
+            a = seq[i] % 2
+            b = seq[i+1] % 2
+            transitions[a,b] += 1
+    P = transitions / transitions.sum(axis=1, keepdims=True)
+    markov_matrices.append(P)
+
+# Consolidated Visualizations
+
+# 1. Parity ratio heatmap
+plt.figure(figsize=(12,5))
+sns.heatmap(np.array(parity_ratios).T, cmap="Blues", annot=False, cbar=True,
+            xticklabels=sorted_times, yticklabels=["Odd","Even"])
+plt.title("Parity (Odd/Even) Count per Stopping Time Group")
+plt.xlabel("Stopping Time")
+plt.ylabel("Parity")
+plt.tight_layout()
+plt.show()
+
+# 2. Modulo breakdown heatmaps
+for mod, ratios, mod_label in zip(
+    [3,4,5,6],[mod3_ratios,mod4_ratios,mod5_ratios,mod6_ratios],["mod3","mod4","mod5","mod6"]):
+    plt.figure(figsize=(12,5))
+    sns.heatmap(np.array(ratios).T, cmap="viridis", annot=False, cbar=True,
+                xticklabels=sorted_times, yticklabels=[f"{mod_label}={m}" for m in range(mod)])
+    plt.title(f"{mod_label} Breakdown per Stopping Time Group")
+    plt.xlabel("Stopping Time")
+    plt.ylabel(f"{mod_label} Value")
+    plt.tight_layout()
+    plt.show()
+
+# 3. Distribution plot of group sizes
+plt.figure(figsize=(10,5))
+plt.bar(sorted_times, group_sizes)
+plt.title("Number of Elements in Each Stopping Time Group")
+plt.xlabel("Stopping Time")
+plt.ylabel("Group Size")
+plt.tight_layout()
+plt.show()
+
+# 4. Cluster count distribution
+plt.figure(figsize=(10,5))
+for k in range(1, 4):
+    sizes = [cluster_counts_dict[t][k-1] if t in cluster_counts_dict and len(cluster_counts_dict[t])>=k else 0 for t in sorted_times]
+    plt.plot(sorted_times, sizes, label=f"Cluster {k}")
+plt.title("KMeans Cluster Counts per Stopping Time Group")
+plt.xlabel("Stopping Time")
+plt.ylabel("Cluster Size")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# 5. Markov parity transition matrices heatmap summary
+# We'll show the odd->even and even->odd probabilities for each group as lines
+odd_to_even = [P[1,0] for P in markov_matrices]
+even_to_odd = [P[0,1] for P in markov_matrices]
+
+plt.figure(figsize=(10,5))
+plt.plot(sorted_times, odd_to_even, label="Odd → Even")
+plt.plot(sorted_times, even_to_odd, label="Even → Odd")
+plt.title("Markov Parity Transition Probabilities per Stopping Time Group")
+plt.xlabel("Stopping Time")
+plt.ylabel("Transition Probability")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
