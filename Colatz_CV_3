@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from IPython.display import HTML
+import os
 
 # Example: Collatz variant (change rules as needed)
 def odd_rule(z):   # 3n*i + 1
     return 3*z*1j + 1
-def even_rule(z):  # 0.5*n
+def even_rule(z):  # 0.5*n*i
     return 0.5*z*1j
 
 def collatz_imaginary_series(n, odd_rule, even_rule, max_iter=5000):
@@ -22,36 +22,75 @@ def collatz_imaginary_series(n, odd_rule, even_rule, max_iter=5000):
             break
         try:
             # Check if z is even (real part is an even integer and imag part is zero)
-            if int(z.real) % 2 == 0:
+            if abs(z.imag) < 1e-10 and int(z.real) % 2 == 0:
                 z = even_rule(z)
             else:
                 z = odd_rule(z)
-        except OverflowError:
+        except (OverflowError, ValueError):
             # Handle potential overflow during integer conversion
             break
     return seq
 
-start_vals = range(1,10)
-sequences = [collatz_imaginary_series(start, odd_rule, even_rule, max_iter=300) for start in start_vals]
-max_len = max(len(seq) for seq in sequences)
+print("Generating Collatz Complex Trajectories Animation...")
+
+start_vals = range(1, 10)
+sequences = [collatz_imaginary_series(start, odd_rule, even_rule, max_iter=100) for start in start_vals]
+max_len = max(len(seq) for seq in sequences) if sequences else 1
 cmap = plt.cm.twilight
 colors = [cmap(i / len(start_vals)) for i in range(len(start_vals))]
 
-fig, ax = plt.subplots(figsize=(7, 7))
-ax.set_title("Live Animation: Collatz Complex Trajectories (Colab compatible)")
+# Create static plot first
+fig, ax = plt.subplots(figsize=(10, 10))
+ax.set_title("Collatz Complex Trajectories (3n*i + 1, 0.5*n*i)", fontsize=14)
 ax.set_xlabel("Real")
 ax.set_ylabel("Imaginary")
 ax.grid(True, linestyle='--', alpha=0.5)
-# Auto-scale axes based on data range
-all_reals = [z.real for seq in sequences for z in seq]
-all_imags = [z.imag for seq in sequences for z in seq]
+
+# Plot all trajectories
+all_reals = []
+all_imags = []
+for i, seq in enumerate(sequences):
+    if seq:
+        x = [z.real for z in seq]
+        y = [z.imag for z in seq]
+        all_reals.extend(x)
+        all_imags.extend(y)
+        ax.plot(x, y, color=colors[i], linewidth=2, alpha=0.7, label=f'n={start_vals[i]}')
+        ax.scatter(x[0], y[0], color=colors[i], s=50, marker='o', edgecolor='black', linewidth=1)
+        ax.scatter(x[-1], y[-1], color=colors[i], s=50, marker='s', edgecolor='black', linewidth=1)
+
 if all_reals and all_imags:
-    ax.set_xlim(min(all_reals) - 1, max(all_reals) + 1)
-    ax.set_ylim(min(all_imags) - 1, max(all_imags) + 1)
+    margin = 0.1 * (max(all_reals) - min(all_reals)) if max(all_reals) != min(all_reals) else 1
+    ax.set_xlim(min(all_reals) - margin, max(all_reals) + margin)
+    margin = 0.1 * (max(all_imags) - min(all_imags)) if max(all_imags) != min(all_imags) else 1
+    ax.set_ylim(min(all_imags) - margin, max(all_imags) + margin)
 
+ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
 
-lines = [ax.plot([], [], color=colors[i], linewidth=2)[0] for i in range(len(start_vals))]
-points = [ax.plot([], [], 'o', color=colors[i], markersize=6)[0] for i in range(len(start_vals))]
+# Save the static figure
+output_path = os.path.join("figures", "collatz_cv_3_complex_trajectories.png")
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Static figure saved to: {output_path}")
+
+plt.show()
+
+# Create and save animation frames
+print("Creating animation frames...")
+fig_anim, ax_anim = plt.subplots(figsize=(10, 10))
+ax_anim.set_title("Collatz Complex Trajectories Animation", fontsize=14)
+ax_anim.set_xlabel("Real")
+ax_anim.set_ylabel("Imaginary")
+ax_anim.grid(True, linestyle='--', alpha=0.5)
+
+if all_reals and all_imags:
+    margin = 0.1 * (max(all_reals) - min(all_reals)) if max(all_reals) != min(all_reals) else 1
+    ax_anim.set_xlim(min(all_reals) - margin, max(all_reals) + margin)
+    margin = 0.1 * (max(all_imags) - min(all_imags)) if max(all_imags) != min(all_imags) else 1
+    ax_anim.set_ylim(min(all_imags) - margin, max(all_imags) + margin)
+
+lines = [ax_anim.plot([], [], color=colors[i], linewidth=2)[0] for i in range(len(start_vals))]
+points = [ax_anim.plot([], [], 'o', color=colors[i], markersize=8)[0] for i in range(len(start_vals))]
 
 def init():
     for line, point in zip(lines, points):
@@ -61,15 +100,25 @@ def init():
 
 def animate(frame):
     for i, seq in enumerate(sequences):
-        x = [z.real for z in seq[:frame+1]]
-        y = [z.imag for z in seq[:frame+1]]
-        lines[i].set_data(x, y)
-        if len(x) > 0:
-            points[i].set_data([x[-1]], [y[-1]]) # Pass as lists
+        if seq and frame < len(seq):
+            x = [z.real for z in seq[:frame+1]]
+            y = [z.imag for z in seq[:frame+1]]
+            lines[i].set_data(x, y)
+            if len(x) > 0:
+                points[i].set_data([x[-1]], [y[-1]])
     return lines + points
 
-ani = animation.FuncAnimation(fig, animate, frames=max_len, init_func=init,
-                              interval=200, blit=False, repeat=False)
+ani = animation.FuncAnimation(fig_anim, animate, frames=min(max_len, 50), init_func=init,
+                              interval=200, blit=False, repeat=True)
 
-plt.close(fig)  # Prevents static duplicate image
-HTML(ani.to_jshtml())
+# Save animation as GIF
+anim_path = os.path.join("figures", "collatz_cv_3_animation.gif")
+try:
+    ani.save(anim_path, writer='pillow', fps=5)
+    print(f"Animation saved to: {anim_path}")
+except Exception as e:
+    print(f"Could not save animation: {e}")
+    print("Animation created but not saved (pillow writer may not be available)")
+
+plt.show()
+print("Collatz CV_3 analysis completed!")

@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 import logging
 from scipy import stats
-import seaborn as sns
+# import seaborn as sns  # Not available, using matplotlib instead
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import warnings
 warnings.filterwarnings('ignore')
@@ -574,6 +574,13 @@ class CollatzTrajectoryTester:
             ax6.set_ylim(0, 1)
 
         plt.tight_layout()
+        
+        # Save the figure
+        import os
+        output_path = os.path.join("figures", "collatz_mc_2_markov_analysis.png")
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Figure saved to: {output_path}")
+        
         plt.show()
 
     def generate_final_report(self):
@@ -593,21 +600,21 @@ class CollatzTrajectoryTester:
                     best_accuracy = accuracy
                     best_chain_name = chain_name
 
-        print(f"\n🏆 BEST PERFORMING CHAIN: {best_chain_name} ({best_accuracy:.1f}% within 5 steps)")
+        print(f"\n>> BEST PERFORMING CHAIN: {best_chain_name} ({best_accuracy:.1f}% within 5 steps)")
 
         # Summary statistics
         total_tests = sum(len(results) for results in self.results.values())
-        print(f"📊 TOTAL TESTS CONDUCTED: {total_tests}")
-        print(f"🔬 MARKOV CHAIN TYPES TESTED: {len(self.chains)}")
+        print(f">> TOTAL TESTS CONDUCTED: {total_tests}")
+        print(f">> MARKOV CHAIN TYPES TESTED: {len(self.chains)}")
 
         # Key findings
-        print(f"\n🔍 KEY FINDINGS:")
+        print(f"\n>> KEY FINDINGS:")
         if self.error_analysis:
             print("   • Error correlation analysis completed")
             print("   • Problematic cases identified and analyzed")
             print("   • Improvement suggestions generated")
 
-        print(f"\n💡 RECOMMENDATIONS:")
+        print(f"\n>> RECOMMENDATIONS:")
         print("   • Use ensemble of top-performing chains for best accuracy")
         print("   • Focus on magnitude-based features for large numbers")
         print("   • Consider adaptive learning for continuous improvement")
@@ -620,7 +627,7 @@ class CollatzTrajectoryTester:
 
 def main():
     """Main execution function"""
-    print("🚀 Starting Advanced Markov Chain Collatz Trajectory Tester...")
+    print(">> Starting Advanced Markov Chain Collatz Trajectory Tester...")
 
     # Initialize tester
     tester = CollatzTrajectoryTester(

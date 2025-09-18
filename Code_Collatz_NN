@@ -72,7 +72,11 @@ def prob_exact(y_true, mean, std):
 probs = prob_exact(y_test, mean_pred, std_pred)
 
 import matplotlib.pyplot as plt
+import os
 
+print("Creating Neural Network visualizations...")
+
+# Prediction scatter plot
 plt.figure(figsize=(10,6))
 plt.scatter(y_test, mean_pred, alpha=0.3, label='Predicted vs True')
 plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', label='Perfect prediction')
@@ -80,20 +84,40 @@ plt.xlabel('True Steps')
 plt.ylabel('Predicted Steps')
 plt.legend()
 plt.title('Collatz Steps: Neural Network Prediction')
+plt.grid(True, alpha=0.3)
+
+# Save the figure
+output_path = os.path.join("figures", "collatz_nn_prediction_scatter.png")
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Figure saved to: {output_path}")
 plt.show()
 
-# Uncertainty
+# Uncertainty plot
 plt.figure(figsize=(10,6))
 plt.errorbar(y_test[:200], mean_pred[:200], yerr=std_pred[:200], fmt='o', alpha=0.5)
 plt.xlabel('True Steps')
 plt.ylabel('Predicted Steps')
 plt.title('Prediction with Uncertainty (MC Dropout)')
+plt.grid(True, alpha=0.3)
+
+# Save the figure
+output_path = os.path.join("figures", "collatz_nn_uncertainty.png")
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Figure saved to: {output_path}")
 plt.show()
 
 # Probability histogram
 plt.figure(figsize=(10,6))
-plt.hist(probs, bins=30)
+plt.hist(probs, bins=30, alpha=0.7, edgecolor='black')
 plt.xlabel('Probability of exact prediction')
 plt.ylabel('Frequency')
 plt.title('Distribution of Exact Prediction Probabilities')
+plt.grid(True, alpha=0.3)
+
+# Save the figure
+output_path = os.path.join("figures", "collatz_nn_probability_distribution.png")
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Figure saved to: {output_path}")
 plt.show()
+
+print("Neural Network analysis completed!")

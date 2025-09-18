@@ -395,11 +395,11 @@ class CollatzSolver:
         print(f"Best performing method: {best_method[0]} ({best_accuracy:.1f}%)")
 
         if best_accuracy > 95:
-            print("✓ High accuracy achieved - computational evidence supports conjecture")
+            print("+ High accuracy achieved - computational evidence supports conjecture")
         elif best_accuracy > 80:
             print("~ Moderate accuracy - some computational evidence for conjecture")
         else:
-            print("✗ Low accuracy - computational methods inconclusive")
+            print("- Low accuracy - computational methods inconclusive")
 
         print("\nNote: This analysis tests the conjecture on a limited range.")
         print("Mathematical proof remains an open problem.")
@@ -458,6 +458,13 @@ class CollatzSolver:
         ax4.grid(True, alpha=0.3)
 
         plt.tight_layout()
+        
+        # Save the figure
+        import os
+        output_path = os.path.join("figures", "collatz_mc_1_comprehensive_analysis.png")
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Figure saved to: {output_path}")
+        
         plt.show()
 
 def main():

@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 import logging
 from scipy import stats
-import seaborn as sns
+# import seaborn as sns  # Not available, using matplotlib instead
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import warnings
 warnings.filterwarnings('ignore')
@@ -574,6 +574,13 @@ class CollatzTrajectoryTester:
             ax6.set_ylim(0, 1)
 
         plt.tight_layout()
+        
+        # Save the figure
+        import os
+        output_path = os.path.join("figures", "collatz_mc_3_enhanced_analysis.png")
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Figure saved to: {output_path}")
+        
         plt.show()
 
     def generate_final_report(self):
@@ -593,21 +600,21 @@ class CollatzTrajectoryTester:
                     best_accuracy = accuracy
                     best_chain_name = chain_name
 
-        print(f"\n🏆 BEST PERFORMING CHAIN: {best_chain_name} ({best_accuracy:.1f}% within 5 steps)")
+        print(f"\n>> BEST PERFORMING CHAIN: {best_chain_name} ({best_accuracy:.1f}% within 5 steps)")
 
         # Summary statistics
         total_tests = sum(len(results) for results in self.results.values())
-        print(f"📊 TOTAL TESTS CONDUCTED: {total_tests}")
-        print(f"🔬 MARKOV CHAIN TYPES TESTED: {len(self.chains)}")
+        print(f">> TOTAL TESTS CONDUCTED: {total_tests}")
+        print(f">> MARKOV CHAIN TYPES TESTED: {len(self.chains)}")
 
         # Key findings
-        print(f"\n🔍 KEY FINDINGS:")
+        print(f"\n>> KEY FINDINGS:")
         if self.error_analysis:
             print("   • Error correlation analysis completed")
             print("   • Problematic cases identified and analyzed")
             print("   • Improvement suggestions generated")
 
-        print(f"\n💡 RECOMMENDATIONS:")
+        print(f"\n>> RECOMMENDATIONS:")
         print("   • Use ensemble of top-performing chains for best accuracy")
         print("   • Focus on magnitude-based features for large numbers")
         print("   • Consider adaptive learning for continuous improvement")
@@ -620,8 +627,8 @@ class CollatzTrajectoryTester:
 
 def main():
     """Main execution function"""
-    print("🚀 Starting Enhanced Markov Chain Collatz Trajectory Tester...")
-    print("   ✨ Features: Ensemble Learning, Magnitude Focus, Adaptive Improvement")
+    print(">> Starting Enhanced Markov Chain Collatz Trajectory Tester...")
+    print("   >> Features: Ensemble Learning, Magnitude Focus, Adaptive Improvement")
 
     # Initialize tester with enhanced parameters for better testing
     tester = CollatzTrajectoryTester(
@@ -633,33 +640,33 @@ def main():
     tester.train_all_chains(training_size=3000)
 
     # Run comprehensive tests
-    print("\n🔬 Running comprehensive prediction tests...")
+    print("\n>> Running comprehensive prediction tests...")
     results = tester.run_comprehensive_test()
 
     # Analyze results with enhanced analysis
-    print("\n📊 Analyzing accuracy and performance...")
+    print("\n>> Analyzing accuracy and performance...")
     accuracy_stats = tester.analyze_accuracy()
 
-    print("\n🔍 Performing error correlation analysis...")
+    print("\n>> Performing error correlation analysis...")
     tester.analyze_error_correlations()
 
-    print("\n⚠️  Identifying problematic cases...")
+    print("\n>> Identifying problematic cases...")
     tester.identify_problematic_cases(error_threshold=15)
 
-    print("\n💡 Generating improvement suggestions...")
+    print("\n>> Generating improvement suggestions...")
     improvements = tester.improve_chains_based_on_analysis()
 
     # Create enhanced visualizations
-    print("\n📈 Creating comprehensive visualizations...")
+    print("\n>> Creating comprehensive visualizations...")
     tester.create_visualizations()
 
     # Generate final enhanced report
-    print("\n📋 Generating final performance report...")
+    print("\n>> Generating final performance report...")
     final_report = tester.generate_final_report()
 
     # Performance summary
     print("\n" + "="*100)
-    print("🎯 ENHANCED MARKOV CHAIN SYSTEM PERFORMANCE SUMMARY")
+    print(">> ENHANCED MARKOV CHAIN SYSTEM PERFORMANCE SUMMARY")
     print("="*100)
 
     if 'Ensemble-TopPerformers' in tester.results and tester.results['Ensemble-TopPerformers']:
@@ -667,7 +674,7 @@ def main():
         ensemble_within_5 = sum(1 for r in ensemble_results if r.error <= 5) / len(ensemble_results) * 100
         ensemble_mae = np.mean([r.error for r in ensemble_results])
 
-        print(f"🏆 ENSEMBLE METHOD RESULTS:")
+        print(f">> ENSEMBLE METHOD RESULTS:")
         print(f"   Accuracy (within 5 steps): {ensemble_within_5:.1f}%")
         print(f"   Mean Absolute Error: {ensemble_mae:.2f} steps")
         print(f"   Total predictions made: {len(ensemble_results):,}")
@@ -697,8 +704,8 @@ def main():
         large_acc = sum(1 for r in large_number_results if r.error <= 5) / len(large_number_results) * 100
         small_acc = sum(1 for r in small_number_results if r.error <= 5) / len(small_number_results) * 100
 
-        print(f"\n📏 MAGNITUDE-BASED PERFORMANCE:")
-        print(f"   Large numbers (≥1000): {large_acc:.1f}% accuracy ({len(large_number_results)} tests)")
+        print(f"\n>> MAGNITUDE-BASED PERFORMANCE:")
+        print(f"   Large numbers (>=1000): {large_acc:.1f}% accuracy ({len(large_number_results)} tests)")
         print(f"   Small numbers (<1000): {small_acc:.1f}% accuracy ({len(small_number_results)} tests)")
 
     # Adaptive learning effectiveness
@@ -712,16 +719,16 @@ def main():
             late_avg = np.mean(late_errors)
             improvement = early_avg - late_avg
 
-            print(f"\n🧠 ADAPTIVE LEARNING EFFECTIVENESS:")
+            print(f"\n>> ADAPTIVE LEARNING EFFECTIVENESS:")
             print(f"   Early performance (first 100): {early_avg:.2f} avg error")
             print(f"   Late performance (last 100): {late_avg:.2f} avg error")
             print(f"   Learning improvement: {improvement:.2f} steps reduction")
 
-    print("\n✅ IMPLEMENTATION SUCCESS:")
-    print("   ✓ Ensemble of top-performing chains implemented")
-    print("   ✓ Magnitude-based features enhanced for large numbers")
-    print("   ✓ Adaptive learning with continuous improvement active")
-    print("   ✓ Comprehensive error analysis and correlation studies completed")
+    print("\n>> IMPLEMENTATION SUCCESS:")
+    print("   + Ensemble of top-performing chains implemented")
+    print("   + Magnitude-based features enhanced for large numbers")
+    print("   + Adaptive learning with continuous improvement active")
+    print("   + Comprehensive error analysis and correlation studies completed")
 
     return tester, final_report
 

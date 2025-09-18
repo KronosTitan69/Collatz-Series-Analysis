@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from sklearn.preprocessing import StandardScaler
 from scipy import stats
 from scipy.special import comb
-import seaborn as sns
+# import seaborn as sns  # Not available, using matplotlib instead
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -365,6 +365,13 @@ class CollatzAnalyzer:
             plt.colorbar(im, ax=axes[1, 2])
 
         plt.tight_layout()
+        
+        # Save the figure
+        import os
+        output_path = os.path.join("figures", "collatz_uml_2_comprehensive_analysis.png")
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Figure saved to: {output_path}")
+        
         plt.show()
 
     def run_complete_analysis(self, max_n=10000):
@@ -490,6 +497,6 @@ if __name__ == "__main__":
 
     # Note: For demonstration, using smaller numbers.
     # Increase max_n for more comprehensive analysis
-    results = analyzer.run_complete_analysis(max_n=5000)
+    results = analyzer.run_complete_analysis(max_n=2000)  # Reduced for memory
 
     
